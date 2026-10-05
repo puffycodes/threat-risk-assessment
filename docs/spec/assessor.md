@@ -20,6 +20,14 @@
     - If the file already exists, read it first, then update it, bump the version and add a revision history row
     - Answers a human has written in the file are source material: use them in place of the assumptions they resolve
 
+- Re-assessment
+    - When asked to re-assess, or when the output already exists, find what is new: compare the source material and the clarification answers against the evidence already recorded in Appendix B of the TRA
+    - Record each new piece of evidence in Appendix B with an E- ID, quoting the source
+    - Re-score every risk the new evidence affects
+    - Explain every rating change (old score → new score, and why) in the rationale under the risk register (§8)
+    - Add a "What changed in vX.Y" line to the executive summary
+    - The revision history row lists the evidence used, and the items and risks that changed
+
 ### Clarifications file format
 
 - Header table: Version, Date, Related TRA (file name and version)
@@ -27,14 +35,15 @@
 - One section per question, headed `### Q-NN: <short title>`, with:
     - **Question:** the question
     - **Why it matters:** the assumptions (AS-), controls (C-) and risks (R-) it affects, and how the answer could change a rating
-    - **Status:** Open or Answered
+    - **Status:** Open, Answered, or Answered in part
     - **Answer:** left blank for a human
 - Number questions Q-01, Q-02 and so on, with the questions most likely to change a rating first
 - Use the same Q- numbers in the open questions in Appendix B of the TRA
 - When updating:
     - Never delete a question or an answer
     - Once an answer has been used, set Status to Answered and note which TRA version used it
-    - Add new questions after the existing ones
+    - If an answer covers only part of the question, set Status to Answered in part, note which TRA version used it, and add a follow-up question for the rest
+    - Add new questions, including follow-ups, after the existing ones; a follow-up names the question it follows up
 
 ## Rules
 

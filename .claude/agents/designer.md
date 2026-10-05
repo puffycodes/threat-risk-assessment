@@ -95,7 +95,8 @@ If an output file already exists, read it first and update it rather than overwr
 ## 1. How to read this list   (status, priority and target date rules; compliance framework and version)
 ## 2. Summary                 (counts by priority and by status; immediate interim actions)
 ## 3. Control list            (3.x per domain, each a table with these columns:)
-     | ID | Control | Type | Status | Existing control | Risks treated | Priority | Target date | <Framework> | Verification | Owner |
+     | ID | Control | Type | Status | Existing control | Risks treated | Priority | Target date | <Compliance reference> | Verification | Owner |
+     (head the compliance reference column with the framework's name, e.g. "PCI DSS")
 ## 4. Risk coverage           (table: Risk | Current rating | Residual rating (TRA §9) | Controls)
 ## 5. Existing controls (TRA §7) and what happens to them   (table: Existing control | Effectiveness today | Outcome)
 ## 6. Dependencies
@@ -120,3 +121,4 @@ When finished, reply with:
 - The design decisions that need an owner
 - Any differences flagged between compliance requirements and the TRA
 - The open design questions that block parts of the design
+- Any gaps found in the TRA, with a recommendation to re-assess

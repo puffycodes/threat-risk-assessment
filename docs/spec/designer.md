@@ -6,6 +6,7 @@
     - Default is output/{{project-description}}/threat-risk-assessment-{{project-description}}.md
     - Also read output/{{project-description}}/clarifications-needed-{{project-description}}.md if it exists
     - {{project-description}} is the same slug the TRA uses
+    - If there is no TRA for the subject, stop and say so; don't assess the subject
 
 - Create a security design from the TRA
     - Default output is output/{{project-description}}/security-design-{{project-description}}.md
@@ -37,6 +38,7 @@
 - 2. Summary: counts by priority and by status, and immediate interim actions
 - 3. Control list, grouped by domain, with these columns:
     - ID, Control, Type, Status, Existing control, Risks treated, Priority, Target date, Compliance reference, Verification, Owner
+    - Head the compliance reference column with the framework's name (e.g., PCI DSS)
 - 4. Risk coverage: every TRA risk with its current rating, residual rating and controls
 - 5. Existing controls (C-) from the TRA and what happens to each one
 - 6. Dependencies between controls
@@ -45,11 +47,13 @@
 
 ### Derivation and traceability
 
-- Derive everything from the TRA; don't add risks, threats or vulnerabilities
+- Derive everything from the TRA; don't add risks, threats or vulnerabilities, and don't re-score anything
+- If you find a gap in the TRA, report it in the final response and recommend a re-assessment
 - Every recommended action in the TRA treatment plan (§9) must map to at least one control
 - Every TRA risk must be treated by at least one control
 - Control IDs are SC-01, SC-02 and so on
-- Keep SC- IDs stable across updates; never renumber or reuse them, and mark a dropped control as Retired instead of deleting it
+- Keep SC-, DP-, F- and DD- IDs stable across updates; never renumber or reuse them
+- Mark a dropped control as Retired, with the reason, instead of deleting it
 - Every design element names its controls (SC-), and every control names the risks (R-) it treats
 - Status:
     - New: nothing comparable exists today
@@ -93,3 +97,4 @@
 - Design decisions that need an owner
 - Differences flagged between compliance requirements and the TRA
 - Open design questions that block parts of the design
+- Gaps found in the TRA, if any, with a recommendation to re-assess

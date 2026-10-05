@@ -20,7 +20,7 @@ Work these out from the request before starting. Use the default for anything th
 
 `{{project-description}}` is a short kebab-case slug of the subject, for example `customer-portal` or `head-office-network`. Lowercase letters, digits and hyphens only, and no more than about five words. Use the same slug for the folder and both file names.
 
-If the output file already exists, read it first and update it rather than overwriting it blindly. Bump the version and add a row to the revision history. Do the same for the clarifications file.
+If the output file already exists, read it first and update it rather than overwriting it blindly. Bump the version and add a row to the revision history. Do the same for the clarifications file. Treat the update as a re-assessment (see below).
 
 ## Procedure
 
@@ -51,6 +51,17 @@ If the output file already exists, read it first and update it rather than overw
    - The residual counts in §10 match §9.
    - The executive summary counts match §8.
    - Every open question in Appendix B appears in the clarifications file, and the reverse.
+
+## Re-assessment
+
+When you are asked to re-assess, or the TRA already exists:
+
+1. **Find what is new.** Compare the source material and the answers in the clarifications file against the evidence already recorded in Appendix B of the TRA.
+2. **Record new evidence.** Add each new piece of evidence to Appendix B with the next E- ID, quoting the source.
+3. **Update and re-score.** Update every assumption, asset, threat, vulnerability and control the new evidence affects. Then re-score every risk that depends on them. Leave unaffected sections alone.
+4. **Explain every rating change.** In the rationale under the risk register (§8), give the old score, the new score and why, for example "R-05: 10 → 8, High → Medium, because offline backups (C-05) make recovery possible".
+5. **Summarize the change.** Add a "What changed in vX.Y" line to the executive summary. In the revision history row, list the evidence used and the items and risks that changed.
+6. **Update the clarifications file.** Set the statuses of the questions you used, and add follow-up questions (see below).
 
 ## Clarifications file
 
@@ -83,14 +94,18 @@ The clarifications file is where a human answers the questions the assessment co
 - Number questions `Q-01`, `Q-02` and so on. Use the same numbers in Appendix B of the TRA.
 - Put the questions most likely to change a rating first.
 - Leave **Answer** blank for a human to fill in.
-- When updating the file, bump the version and add a revision history row. Never delete a question or an answer. Once an answer has been used, set its status to `Answered` and note which TRA version used it. Add new questions after the existing ones.
+- **Status** is `Open`, `Answered`, or `Answered in part`.
+- When updating the file, bump the version and add a revision history row. Never delete a question or an answer.
+- Once an answer has been used, set its status to `Answered` and note which TRA version used it, for example `Answered (used in TRA version 0.6)`.
+- If an answer covers only part of the question, set its status to `Answered in part`, note which TRA version used it, and add a follow-up question for what is still missing.
+- Add new questions, including follow-ups, after the existing ones. A follow-up names the question it follows up, for example `### Q-19: Exact versions (follow-up to Q-02)`.
 
 ## Rules for evidence and honesty
 
 - **Do not invent facts.** Every asset, vulnerability and control must come from the source material or be clearly marked as an assumption.
 - Record assumptions in §2.7 (Assumptions and constraints). Mark assumed items in tables with `(assumed)`.
 - If you can't determine something, such as who owns an asset or how effective a control is, write `TBD`. Add it as an **Open questions** entry in Appendix B and as a question in the clarifications file. Don't guess silently.
-- Cite evidence in the vulnerability "Source / evidence" column, using file paths with line numbers, document names, interview notes, or clarification answers (for example `clarifications-needed-<slug>.md Q-03`).
+- Cite evidence wherever you state a fact: in the vulnerability "Source / evidence" column, in control notes, and in the text. Use file paths with line numbers, document names, interview notes, or clarification answers (for example `clarifications-needed-<slug>.md Q-03`).
 - Rate conservatively. When evidence for a control is missing, treat the control as `Partial` or `Ineffective`, not `Effective`.
 - Do not modify the process or template files.
 

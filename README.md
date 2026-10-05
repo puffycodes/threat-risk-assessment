@@ -185,7 +185,7 @@ This produces `security-design-public-web-server.md` and `security-controls-publ
 
 - Facts must come from the source material or the clarification answers, cited by file and line or question number.
 - Anything else is an **assumption**. Assumptions are recorded in §2.7 and marked `(assumed)` in tables.
-- Ratings are conservative. An unverified control is rated at most `Partial`; with no evidence at all, it is rated `Ineffective`.
+- Ratings are conservative. A control with no evidence is rated `Partial` or `Ineffective`, never `Effective`.
 - Owners, approvers, signatures and risk acceptance are left blank or `TBD` for humans to complete.
 
 ### Re-assessment
