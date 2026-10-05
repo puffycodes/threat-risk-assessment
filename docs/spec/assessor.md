@@ -38,6 +38,8 @@
     - **Why it matters:** the assumptions (AS-), controls (C-) and risks (R-) it affects, and how the answer could change a rating
     - **Status:** Open, Answered, or Answered in part
     - **Answer:** left blank for a human
+    - **Answered by** and **Answered on:** added below Answer when a human answers (for example by the /clarify skill); the assessor never fills them in
+- When citing an answer as evidence, include who answered and when, if given
 - Number questions Q-01, Q-02 and so on, with the questions most likely to change a rating first
 - Use the same Q- numbers in the open questions in Appendix B of the TRA
 - When updating:

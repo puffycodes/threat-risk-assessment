@@ -93,7 +93,8 @@ The clarifications file is where a human answers the questions the assessment co
 
 - Number questions `Q-01`, `Q-02` and so on. Use the same numbers in Appendix B of the TRA.
 - Put the questions most likely to change a rating first.
-- Leave **Answer** blank for a human to fill in.
+- Leave **Answer** blank for a human to fill in. When a human answers, for example through the `/clarify` skill, they add `- **Answered by:**` and `- **Answered on:**` lines below the Answer. Never fill these in yourself.
+- When you record an answer as evidence in Appendix B, include who answered and when, if given, for example `"Patch monthly" (Q-03; answered by System owner, 2026-10-06)`.
 - **Status** is `Open`, `Answered`, or `Answered in part`.
 - When updating the file, bump the version and add a revision history row. Never delete a question or an answer.
 - Once an answer has been used, set its status to `Answered` and note which TRA version used it, for example `Answered (used in TRA version 0.6)`.

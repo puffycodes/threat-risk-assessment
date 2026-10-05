@@ -1,11 +1,12 @@
 # Threat Risk Assessment Workspace
 
-A workspace for producing threat risk assessments (TRAs), and the security designs that follow from them, with two Claude Code agents:
+A workspace for producing threat risk assessments (TRAs), and the security designs that follow from them, with two Claude Code agents and one skill:
 
-| Agent | What it does | Input | Output |
+| Agent / skill | What it does | Input | Output |
 |---|---|---|---|
 | `assessor` | Runs the TRA process against a subject and writes the assessment. Questions it can't answer go into a clarifications file. | A scenario (description of the system) | TRA + clarifications file |
 | `designer` | Turns a completed TRA into a target security design and a traceable list of security controls | The TRA (+ clarifications file) | Security design + security control list |
+| `/clarify` (skill) | Interviews you to answer the open clarification questions, and writes your answers into the clarifications file | The clarifications file | Updated clarifications file |
 
 ## Contents
 
@@ -27,14 +28,18 @@ A workspace for producing threat risk assessments (TRAs), and the security desig
 
 ```
 .
-├── .claude/agents/
-│   ├── assessor.md                          # assessor agent (built from docs/spec/assessor.md)
-│   └── designer.md                          # designer agent (built from docs/spec/designer.md)
+├── .claude/
+│   ├── agents/
+│   │   ├── assessor.md                      # assessor agent (built from docs/spec/assessor.md)
+│   │   └── designer.md                      # designer agent (built from docs/spec/designer.md)
+│   └── skills/clarify/
+│       └── SKILL.md                         # /clarify skill (built from docs/spec/clarify.md)
 ├── docs/
 │   ├── threat-risk-assessment-process.md    # the 11-step TRA process the assessor follows
 │   ├── threat-risk-assessment-template.md   # the TRA document template
 │   └── spec/
 │       ├── assessor.md                      # spec for the assessor agent
+│       ├── clarify.md                       # spec for the /clarify skill
 │       └── designer.md                      # spec for the designer agent
 ├── scenario/<subject>/                      # input: one folder per subject   (not in git)
 │   └── description.md
@@ -58,7 +63,8 @@ A workspace for producing threat risk assessments (TRAs), and the security desig
    ┌──────────────────┐      clarifications-needed-<subject>.md
    │     assessor     │────► (questions for a human)
    └──────────────────┘                 │
-            │                           │ human writes answers
+            │                           │ /clarify interview
+            │                           │ (or edit the file)
             ▼                           ▼
  threat-risk-assessment-<subject>.md ◄── re-assessment (assessor again)
             │                             repeat until the open questions
@@ -74,7 +80,7 @@ A workspace for producing threat risk assessments (TRAs), and the security desig
 
 1. **Describe the subject** in `scenario/<subject>/description.md`.
 2. **Run the assessor.** It writes the TRA and a clarifications file.
-3. **Answer questions** in the clarifications file.
+3. **Answer questions** with `/clarify <subject>`, or by editing the clarifications file.
 4. **Run the assessor again.** It re-assesses using your answers, re-scores the risks, and adds follow-up questions.
 5. **Repeat steps 3–4** until the questions that drive the ratings are answered.
 6. **Run the designer** to produce the security design and the control list.
@@ -133,7 +139,13 @@ do a threat risk assessment for scenario/public-web-server
 
 This produces `output/public-web-server/threat-risk-assessment-public-web-server.md` (version 0.1) and `clarifications-needed-public-web-server.md`.
 
-**3. Answer the most important questions.** They are listed first in the clarifications file (see [Answering clarification questions](#answering-clarification-questions)).
+**3. Answer the questions.**
+
+```
+/clarify public-web-server
+```
+
+Claude interviews you, most important questions first, and saves your answers with who answered and when. You can also edit the file by hand (see [Answering clarification questions](#answering-clarification-questions)).
 
 **4. Re-assess.**
 
@@ -190,7 +202,16 @@ This produces `security-design-public-web-server.md` and `security-controls-publ
 
 ### Re-assessment
 
-Ask for a re-assessment whenever the scenario or the clarification answers change. The assessor reads the existing TRA and clarifications file and works out what is new. It then updates the affected sections, explains every rating change, bumps both versions, and adds follow-up questions for answers that were only partial.
+Ask for a re-assessment whenever the scenario or the clarification answers change. The assessor reads the existing TRA and clarifications file and works out what is new. It then:
+
+- records each new answer in Appendix B with an E- ID, quoting it with who answered and when
+- updates the affected sections and re-scores the affected risks
+- explains every rating change in the §8 rating history and in a "What changed" line in the executive summary
+- marks the answers it used as `Answered` or `Answered in part`, and adds follow-up questions for what is still missing
+- refreshes the "Why it matters" text of the remaining open questions, so the ratings they quote stay current
+- bumps the version of both files
+
+A re-assessment can raise ratings as well as lower them: an answer can reveal a new weakness, or even a new risk.
 
 ---
 
@@ -245,6 +266,21 @@ The control list also has a risk-coverage table, a table showing what happens to
 
 ## Answering clarification questions
 
+### With the interview (recommended)
+
+Type `/clarify` and the subject in Claude Code:
+
+```
+/clarify public-web-server
+/clarify public-web-server Q-17 Q-22      # only these questions
+```
+
+Claude asks who is answering, then goes through the open questions, most important first. It asks up to four at a time and offers multiple-choice answers where they fit. Type your own answer whenever the options don't fit, choose "Don't know", or type `stop` to finish early. Answers are saved to the clarifications file after each batch, with **Answered by** and **Answered on**, so nothing is lost if you stop part-way.
+
+The interview never changes a question's status, never re-assesses, and never records secrets such as passwords or full card numbers. It is a skill rather than an agent because it needs to ask you questions as it goes, and agents run in the background.
+
+### By editing the file
+
 Each question in `clarifications-needed-<slug>.md` looks like this:
 
 ```markdown
@@ -256,7 +292,7 @@ Each question in `clarifications-needed-<slug>.md` looks like this:
 - **Answer:**
 ```
 
-- **Write your answer after `**Answer:**`** and leave the rest alone. The agent sets the **Status** when it uses the answer.
+- **Write your answer after `**Answer:**`**, then add `- **Answered by:** <name or role>` and `- **Answered on:** <YYYY-MM-DD>` below it. Leave the rest alone. The agent sets the **Status** when it uses the answer.
 - **Start with the questions near the top.** They are the most likely to change a rating; the "Why it matters" line says how.
 - **Partial answers are fine.** The agent uses what you give, marks the question "Answered in part", and adds a follow-up question for the rest.
 - **Be specific.** "Apache 2.4.62 on Ubuntu 24.04" lets the agent check for known vulnerabilities; "Apache" does not.
@@ -294,7 +330,7 @@ Every risk traces to its assets, threats, vulnerabilities and existing controls.
 
 ## Changing the agents
 
-Each agent has a **spec** in `docs/spec/`, the short, human-maintained statement of what it must do. The **agent definition** in `.claude/agents/` is the detailed instruction set built from it.
+Each agent and skill has a **spec** in `docs/spec/`, the short, human-maintained statement of what it must do. The **agent definition** in `.claude/agents/` (or the skill in `.claude/skills/`) is the detailed instruction set built from it.
 
 To change an agent's behaviour:
 
@@ -309,6 +345,7 @@ To change how assessments are done for every subject, edit `docs/threat-risk-ass
 ## Limits and good practice
 
 - **Ratings are only as good as the evidence.** A two-line scenario produces a TRA built mostly on assumptions. Treat early versions as a list of what to find out, not a verdict.
+- **Answers are taken at face value.** The assessor uses clarification answers as given, recording who answered and when. Ask the person who actually knows; for example, Security may not know the payment integration as well as the application owner. Answers from more than one person, and verification by scans, make the ratings more reliable.
 - **Agents don't test anything.** They don't scan, probe or log in to systems. Controls stay `Partial` until someone verifies them; port scans, vulnerability scans and pen tests are recommended as evidence.
 - **Agents have no shell.** They can only read, search and write files.
 - **Web access is limited to public information.** The agents look up public threat intelligence, CVEs and standards such as PCI DSS, CIS and OWASP. They never send details of your system to external services.
