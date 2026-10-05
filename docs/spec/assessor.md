@@ -27,6 +27,7 @@
     - Explain every rating change (old score → new score, and why) in the rationale under the risk register (§8)
     - Add a "What changed in vX.Y" line to the executive summary
     - The revision history row lists the evidence used, and the items and risks that changed
+    - Refresh the Why it matters text of every Open question so any ratings it quotes match the current TRA; leave Answered questions as a record
 
 ### Clarifications file format
 

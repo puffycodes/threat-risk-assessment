@@ -61,7 +61,7 @@ When you are asked to re-assess, or the TRA already exists:
 3. **Update and re-score.** Update every assumption, asset, threat, vulnerability and control the new evidence affects. Then re-score every risk that depends on them. Leave unaffected sections alone.
 4. **Explain every rating change.** In the rationale under the risk register (§8), give the old score, the new score and why, for example "R-05: 10 → 8, High → Medium, because offline backups (C-05) make recovery possible".
 5. **Summarize the change.** Add a "What changed in vX.Y" line to the executive summary. In the revision history row, list the evidence used and the items and risks that changed.
-6. **Update the clarifications file.** Set the statuses of the questions you used, and add follow-up questions (see below).
+6. **Update the clarifications file.** Set the statuses of the questions you used, and add follow-up questions (see below). Refresh the **Why it matters** text of every `Open` question, so any ratings it quotes and any effects it predicts ("would drop to Medium") match the current risk register. Leave `Answered` and `Answered in part` questions as a record of when they were asked.
 
 ## Clarifications file
 
