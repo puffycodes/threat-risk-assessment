@@ -13,10 +13,12 @@ Arguments: `$ARGUMENTS`
 
 ## 1. Find the file
 
-- The first argument is the subject slug, such as `public-web-server`. Any further arguments are question IDs to limit the interview to, such as `Q-17 Q-22`.
-- If no subject is given, use Glob for `output/*/clarifications-needed-*.md`. If there is exactly one, use it. If there are several, ask the user which one.
+- Arguments that look like question IDs, such as `Q-17 Q-22`, limit the interview to those questions. The rest of the arguments name the subject.
+- The subject can be a slug, such as `public-web-server`, or a name. Turn a name into a slug: lowercase, with spaces replaced by hyphens, so `public web server` becomes `public-web-server`.
+- If no subject is given, use Glob for `output/*/clarifications-needed-*.md`. If there is exactly one, use it. If there are several, or the subject matches none of them, list them and ask the user which one.
 - The file is `output/<slug>/clarifications-needed-<slug>.md`. If it doesn't exist, stop and tell the user to run the assessor first.
 - Read the whole file. Note its version, and each question's ID, title, question text, Why it matters, Status and Answer.
+- If the TRA exists (`output/<slug>/threat-risk-assessment-<slug>.md`), read it too, but only to check answers for contradictions (step 5). Never edit it.
 
 ## 2. Plan the interview
 
@@ -62,7 +64,7 @@ After **each** batch, write the answers to the file with Edit, so stopping part-
 
 **Secrets.** If an answer contains a password, private key, API token or full card number, don't write it. Tell the user it was left out, and record only that the item exists, such as "A database password exists (value withheld)".
 
-**Contradictions.** If an answer contradicts another answer in the file, or a stated fact in the file, quote both and ask which is right before writing.
+**Contradictions.** If an answer contradicts another answer in the file, or a fact stated in the file or the TRA, quote both and ask which is right before writing.
 
 **Version bump.** Bump the file's version once per interview, at the first write. Add a revision history row: `| <new version> | <today> | Answers added to Q-.., Q-.. by <Answered by> (via /clarify). |`. Update the row's list of questions if more are answered later in the same interview.
 

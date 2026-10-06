@@ -49,7 +49,7 @@ If an output file already exists, read it first and update it rather than overwr
      - **Replace:** supersedes an assumed or ineffective existing control.
    - Set priority from the highest *current* TRA rating among the risks the control treats: P1 Critical, P2 High, P3 Medium, P4 Low.
    - Set the target date to the earliest TRA §9 target date among those risks.
-   - Add a compliance reference only for frameworks the TRA says apply (§2.6). Use WebSearch or WebFetch to confirm requirement numbers if you're unsure. If a requirement is stricter than the TRA (for example, a shorter review period), state both figures in the control and flag the difference; don't change the TRA.
+   - Add a compliance reference only for frameworks the TRA says apply (§2.6), and note when applicability depends on an open question. Use WebSearch or WebFetch to confirm requirement numbers if you're unsure. If a requirement is stricter than the TRA (for example, a shorter review period), state both figures in the control and flag the difference; don't change the TRA.
    - Say how to verify each control: the evidence or test that shows it works.
 6. **Build the design.**
    - Describe the current state only from evidence (TRA facts and clarification answers), with citations.

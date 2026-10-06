@@ -37,6 +37,7 @@
   2. [R-02: short description, rating]
   3. [R-03: short description, rating]
 - **Decisions required:** [e.g., approve funding for X; accept residual risk R-05]
+- **What changed in v[X.Y]:** [Re-assessments only: the evidence used and the risks that moved, e.g., "Q-03 answer (E-05) lowers R-01 from 20 to 15". Add a line for each version and keep the earlier ones.]
 
 ---
 
@@ -195,6 +196,16 @@ Risk score = Likelihood × Impact.
 | R-03 | [Staff misconfiguration exposes data publicly] | A-01 | T-03 | V-03 | C-03 | [3] | [4] | [12] | [High] | [Name] |
 | R-04 | [Extended power loss takes service offline] | A-03 | T-04 | V-04 | None | [2] | [4] | [8] | [Medium] | [Name] |
 
+**Rationale for key ratings:** [Why the highest-rated risks score as they do, citing evidence (E-) and assumptions (AS-).]
+
+**Rating history:**
+
+> On every re-assessment, add a row for each risk whose score changes. Never delete rows.
+
+| Version | Change | Reason |
+|---|---|---|
+| [v0.2] | [R-03: 12 High → 8 Medium (likelihood 3 → 2)] | [Firewall blocks SSH brute force from the Internet (E-02)] |
+
 ---
 
 ## 9. Risk treatment plan
@@ -251,7 +262,33 @@ Risk score = Likelihood × Impact.
 
 ## Appendices
 
-- **A.** Architecture / data-flow diagrams
-- **B.** Interview list and evidence references
-- **C.** Vulnerability scan / pen test reports
-- **D.** Glossary
+### A. Architecture / data-flow diagram
+
+[Diagram of the system, its zones and its data flows. Mark any flow inferred rather than evidenced as INFERRED, and cite what it is inferred from.]
+
+### B. Evidence and open questions
+
+**Evidence reviewed**
+
+> One row per piece of evidence, numbered E-01, E-02 and so on, and cited by those numbers elsewhere in the TRA. For clarification answers, say who answered and when. Never renumber.
+
+| Ref | Source | Content |
+|---|---|---|
+| E-01 | [scenario/<slug>/description.md:3] | ["Quoted text"] |
+| E-02 | [clarifications-needed-<slug>.md Q-01; answered by System owner, YYYY-MM-DD] | ["Quoted answer"] |
+
+**Open questions (need human input)**
+
+> Same Q- numbers as the clarifications file, where the questions are answered. Keep answered questions in the list, with their status.
+
+- **Q-01:** *[Open / Answered (E-nn), used in v0.x / Answered in part (E-nn), used in v0.x; follow-up Q-nn]* [Short question]
+
+### C. Vulnerability scan / pen test reports
+
+[References to reports, or "None carried out".]
+
+### D. Glossary
+
+| Term | Meaning |
+|---|---|
+| [CVE] | [Common Vulnerabilities and Exposures: a public identifier for a known vulnerability] |

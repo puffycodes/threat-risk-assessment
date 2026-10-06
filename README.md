@@ -214,6 +214,8 @@ Ask for a re-assessment whenever the scenario or the clarification answers chang
 - refreshes the "Why it matters" text of the remaining open questions, so the ratings they quote stay current
 - bumps the version of both files
 
+You can also ask for a re-assessment to fix gaps the designer reports, with no new answers. The assessor checks each gap against the TRA, fixes the ones that hold, and says why for any it leaves.
+
 A re-assessment can raise ratings as well as lower them: an answer can reveal a new weakness, or even a new risk.
 
 ---
@@ -247,12 +249,13 @@ The designer needs a finished TRA. If there's no TRA for the subject, it stops a
 - design decisions (DD-) that need an owner
 - residual risk if implemented
 - open design questions
+- assumptions inherited from the TRA, and any the design adds
 
 **Security controls.** One row per control (SC-):
 
 | Field | Meaning |
 |---|---|
-| Status | **New**: nothing comparable exists today. **Strengthen**: builds on an existing TRA control (C-). **Replace**: supersedes an assumed or ineffective one. |
+| Status | **New**: nothing comparable exists today. **Strengthen**: builds on an existing TRA control (C-). **Replace**: supersedes an assumed or ineffective one. **Retired**: no longer needed; kept with the reason, and the ID is never reused. |
 | Risks treated | The TRA risks (R-) the control addresses |
 | Priority | From the highest current rating among those risks: P1 Critical, P2 High, P3 Medium, P4 Low |
 | Target date | The earliest TRA treatment date among those risks |
@@ -278,11 +281,12 @@ Type `/clarify` and the subject in Claude Code:
 ```
 /clarify public-web-server
 /clarify public-web-server Q-17 Q-22      # only these questions
+/clarify public web server                # the subject's name works too
 ```
 
 Claude asks who is answering, then goes through the open questions, most important first. It asks up to four at a time and offers multiple-choice answers where they fit. Type your own answer whenever the options don't fit, choose "Don't know", or type `stop` to finish early. Answers are saved to the clarifications file after each batch, with **Answered by** and **Answered on**, so nothing is lost if you stop part-way.
 
-The interview never changes a question's status, never re-assesses, and never records secrets such as passwords or full card numbers. It is a skill rather than an agent because it needs to ask you questions as it goes, and agents run in the background.
+If an answer contradicts an earlier answer or a fact in the TRA, Claude quotes both and asks which is right before saving. The interview never changes a question's status, never re-assesses, and never records secrets such as passwords or full card numbers. It is a skill rather than an agent because it needs to ask you questions as it goes, and agents run in the background.
 
 ### By editing the file
 
@@ -329,7 +333,7 @@ Every risk traces to its assets, threats, vulnerabilities and existing controls.
 ## Versioning
 
 - **Generated documents** carry their own version and revision history. Agents bump the version on every update, starting at 0.1 with Status `Draft`. Moving to "In review" or "Approved" is a human decision.
-- **Agent definitions, specs, the process and the template** are versioned in git. The generated documents are not (`output/` is git-ignored).
+- **Agent definitions, specs, the process and the templates** are versioned in git. The generated documents are not (`output/` is git-ignored).
 
 ---
 

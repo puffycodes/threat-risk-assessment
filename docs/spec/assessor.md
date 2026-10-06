@@ -24,10 +24,11 @@
     - When asked to re-assess, or when the output already exists, find what is new: compare the source material and the clarification answers against the evidence already recorded in Appendix B of the TRA
     - Record each new piece of evidence in Appendix B with an E- ID, quoting the source
     - Re-score every risk the new evidence affects
-    - Explain every rating change (old score → new score, and why) in the rationale under the risk register (§8)
+    - Explain every rating change (old score → new score, and why) in the rating history under the risk register (§8)
     - Add a "What changed in vX.Y" line to the executive summary
     - The revision history row lists the evidence used, and the items and risks that changed
     - Refresh the Why it matters text of every Open question so any ratings it quotes match the current TRA; leave Answered questions as a record
+    - A re-assessment can also be asked for to fix gaps that the designer or a reviewer found, with no new evidence: check each gap against the TRA, fix the ones that hold, say why for any that don't, and handle rating changes and missing questions as above
 
 ### Clarifications file format
 
@@ -74,7 +75,7 @@
 
 - Tools: read, search and write files; web search and fetch
 - No shell commands
-- Use the web only for public threat intelligence and vulnerability information (e.g., CVEs)
+- Use the web only for public threat intelligence and vulnerability information (e.g., CVEs), and public standards and guidance (e.g., PCI DSS, CIS Benchmarks, OWASP)
 - Never send details of the subject to external services
 
 ### Self-check before finishing
@@ -92,3 +93,4 @@
 - Counts by rating, before and after treatment
 - Top three risks, one line each
 - Number of assumptions and open questions needing human input
+- For a corrections re-assessment: how each reported gap was handled

@@ -8,12 +8,14 @@ Built as a Claude Code skill (`/clarify`), not a subagent: subagents run in the 
 
 - Take a subject
     - Given as the skill's argument, e.g. `/clarify public-web-server`
-    - If none is given, list the subjects under output/ that have a clarifications file and ask which one
+    - Accept the slug or the subject's name; turn a name into its slug (e.g. `public web server` → `public-web-server`)
+    - If none is given, use the only subject under output/ that has a clarifications file; if there are several, or the name matches none, list them and ask which one
     - Optionally narrow to specific questions, e.g. `/clarify public-web-server Q-17 Q-22`
 
 - Take the clarifications file
     - Default is output/{{project-description}}/clarifications-needed-{{project-description}}.md
     - If it doesn't exist, stop and say so; suggest running the assessor first
+    - Also read the TRA, if it exists, but only to check answers for contradictions
 
 - Interview the user
     - Ask who is answering (name or role) once, at the start
@@ -75,7 +77,7 @@ The assessor reads these and cites them with the evidence.
 ## Final response
 
 - Questions answered, with Q- IDs
-- Questions skipped or answered "Don't know", with Q- IDs
+- Questions skipped or answered "Don't know", with Q- IDs and a suggested role to ask
 - Questions still open in total
 - Any contradictions or withheld secrets raised during the interview
 - Next step: ask for a re-assessment
