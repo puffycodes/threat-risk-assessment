@@ -85,6 +85,7 @@
 ### Tools and data handling
 
 - Tools: read, search and write files; web search and fetch
+- Model: Sonnet (its work is derivation with mechanical self-checks, so a smaller model suffices)
 - No shell commands
 - Use the web only for public standards and guidance (e.g., PCI DSS, CIS Benchmarks, OWASP)
 - Never send details of the subject to external services

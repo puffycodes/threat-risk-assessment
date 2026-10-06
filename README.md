@@ -224,7 +224,7 @@ A re-assessment can raise ratings as well as lower them: an answer can reveal a 
 
 **Definition:** `.claude/agents/designer.md`. **Spec:** `docs/spec/designer.md`.
 
-The designer needs a finished TRA. If there's no TRA for the subject, it stops and asks you to run the assessor first.
+The designer needs a finished TRA. If there's no TRA for the subject, it stops and asks you to run the assessor first. It runs on Sonnet (set by `model: sonnet` in its definition); the assessor uses the same model as your Claude Code session.
 
 ### Inputs
 
