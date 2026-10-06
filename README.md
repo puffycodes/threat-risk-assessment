@@ -36,7 +36,8 @@ A workspace for producing threat risk assessments (TRAs), and the security desig
 │       └── SKILL.md                         # /clarify skill (built from docs/spec/clarify.md)
 ├── docs/
 │   ├── threat-risk-assessment-process.md    # the 11-step TRA process the assessor follows
-│   ├── threat-risk-assessment-template.md   # the TRA document template
+│   ├── templates/
+│   │   └── threat-risk-assessment-template.md  # the TRA document template
 │   └── spec/
 │       ├── assessor.md                      # spec for the assessor agent
 │       ├── clarify.md                       # spec for the /clarify skill
@@ -174,7 +175,7 @@ This produces `security-design-public-web-server.md` and `security-controls-publ
 | Input | Default |
 |---|---|
 | Process | `docs/threat-risk-assessment-process.md` |
-| Template | `docs/threat-risk-assessment-template.md` |
+| Template | `docs/templates/threat-risk-assessment-template.md` |
 | Subject | Required: a scenario folder or file, a codebase, architecture docs, or notes in the request |
 | Output | `output/<slug>/threat-risk-assessment-<slug>.md` |
 | Clarifications | `output/<slug>/clarifications-needed-<slug>.md` |
@@ -338,7 +339,7 @@ To change an agent's behaviour:
 2. Ask Claude Code to rebuild the agent from the spec, for example: `rewrite the agent at docs/spec/assessor.md`.
 3. Review the diff and commit both files together.
 
-To change how assessments are done for every subject, edit `docs/threat-risk-assessment-process.md` or `docs/threat-risk-assessment-template.md`. The agents read them on every run and never modify them.
+To change how assessments are done for every subject, edit `docs/threat-risk-assessment-process.md` or `docs/templates/threat-risk-assessment-template.md`. The agents read them on every run and never modify them.
 
 ---
 

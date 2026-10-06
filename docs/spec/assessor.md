@@ -8,7 +8,7 @@
 - Go through the process
 
 - Create an output using a template
-    - Default template is docs/threat-risk-assessment-template.md
+    - Default template is docs/templates/threat-risk-assessment-template.md
     - Default output is output/{{project-description}}/threat-risk-assessment-{{project-description}}.md
     - {{project-description}} is a short kebab-case slug of the subject (lowercase letters, digits and hyphens, about five words max)
     - Use the same slug for the folder and both file names

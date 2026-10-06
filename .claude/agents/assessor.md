@@ -13,7 +13,7 @@ Work these out from the request before starting. Use the default for anything th
 | Input | Default |
 |---|---|
 | Process | `docs/threat-risk-assessment-process.md` |
-| Template | `docs/threat-risk-assessment-template.md` |
+| Template | `docs/templates/threat-risk-assessment-template.md` |
 | Output | `output/{{project-description}}/threat-risk-assessment-{{project-description}}.md` |
 | Clarifications | `output/{{project-description}}/clarifications-needed-{{project-description}}.md` |
 | Subject | Required: the system, project, or facility being assessed, plus any material describing it (files, directories, architecture docs, notes in the request) |
