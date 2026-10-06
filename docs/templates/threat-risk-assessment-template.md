@@ -1,7 +1,7 @@
 # Threat Risk Assessment: [System / Project Name]
 
 > Template. Replace everything in `[brackets]` and delete guidance notes (lines starting with `>`) before issuing.
-> For the method behind each section, see [threat-risk-assessment-process.md](threat-risk-assessment-process.md).
+> For the method behind each section, see [threat-risk-assessment-process.md](../threat-risk-assessment-process.md).
 
 ## Document control
 

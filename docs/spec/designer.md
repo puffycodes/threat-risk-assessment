@@ -9,9 +9,11 @@
     - If there is no TRA for the subject, stop and say so; don't assess the subject
 
 - Create a security design from the TRA
+    - Default template is docs/templates/security-design-template.md
     - Default output is output/{{project-description}}/security-design-{{project-description}}.md
 
 - Create a list of security controls from the TRA
+    - Default template is docs/templates/security-controls-template.md
     - Default output is output/{{project-description}}/security-controls-{{project-description}}.md
 
 - If an output already exists, read it first, then update it, bump the version and add a revision history row
@@ -45,6 +47,12 @@
 
 ## Rules
 
+### Templates
+
+- Keep the templates' section headings, numbering and table columns
+- Replace every placeholder and delete the guidance notes
+- Don't copy the templates' example rows
+
 ### Derivation and traceability
 
 - Derive everything from the TRA; don't add risks, threats or vulnerabilities, and don't re-score anything
@@ -72,7 +80,7 @@
 - List design choices that depend on unanswered clarification questions under Open design questions
 - Set Status to Draft and the date to today
 - Leave approver fields blank for humans
-- Don't modify the TRA, the clarifications file, the process or the template
+- Don't modify the TRA, the clarifications file, the process or the templates
 
 ### Tools and data handling
 
@@ -82,6 +90,8 @@
 - Never send details of the subject to external services
 
 ### Self-check before finishing
+
+- No placeholders or template guidance notes are left
 
 - Every TRA §9 action maps to a control
 - Every TRA §8 risk appears in the risk coverage table, with ratings that match the TRA
