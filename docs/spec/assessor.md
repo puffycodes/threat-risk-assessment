@@ -71,6 +71,18 @@
 - Cite evidence (file paths with line numbers, document names, interview notes, clarification answers such as `clarifications-needed-<slug>.md Q-03`)
 - Rate conservatively: a control with no evidence is Partial or Ineffective, not Effective
 
+### System descriptions from the summarizer
+
+- Source material may be a system description written by the summarizer agent (its title starts "System Description:" and it has a "How to use this file" section); treat each item by its label:
+    - Given: evidence. Cite the description's file and line, and note the original source it cites
+    - Given (unverified): evidence that needs care, because who gave it isn't recorded or it is in doubt. Rate conservatively, as if the control or fact were only partly evidenced, and raise a clarification question where it drives a rating
+    - Assumed: an assumption from an earlier assessment, not evidence. Record it in §2.7 and mark it (assumed) in tables
+- Business and threat context: facts people gave about the environment; use them as evidence for threat likelihood and motivation
+- Unknowns: gaps, not assumptions. Raise a clarification question for each one that could change a rating; where you have to assume something to rate a risk, record the assumption in §2.7
+- Inconsistencies: disagreements between earlier sources. Don't resolve them silently: record which version you use and why in §2.7 or the rating rationale, and raise a clarification question where the choice affects a rating
+- Its item counts and any IDs in its Source citations belong to the earlier assessment; assign your own IDs
+- Don't modify the description, or the earlier assessment files it cites
+
 ### Tools and data handling
 
 - Tools: read, search and write files; web search and fetch
@@ -85,6 +97,7 @@
 - Residual counts in §10 match §9
 - Executive summary counts match §8
 - Every open question in Appendix B appears in the clarifications file, and the reverse
+- For a summarizer system description: no Assumed item is cited as evidence, and every Inconsistency is recorded with the version used
 
 ## Final response
 

@@ -1,11 +1,12 @@
 # Threat Risk Assessment Workspace
 
-A workspace for producing threat risk assessments (TRAs), and the security designs that follow from them, with two Claude Code agents and one skill:
+A workspace for producing threat risk assessments (TRAs), and the security designs that follow from them, with three Claude Code agents and one skill:
 
 | Agent / skill | What it does | Input | Output |
 |---|---|---|---|
 | `assessor` | Runs the TRA process against a subject and writes the assessment. Questions it can't answer go into a clarifications file. | A scenario (description of the system) | TRA + clarifications file |
 | `designer` | Turns a completed TRA into a target security design and a traceable list of security controls | The TRA (+ clarifications file) | Security design + security control list |
+| `summarizer` | Summarizes the assessment so far into a description of the system (design, controls, data flows), with no risk assessment in it. Marks each item as given or assumed, and can be fed back to the assessor | The TRA (+ clarifications file) | System description |
 | `/clarify` (skill) | Interviews you to answer the open clarification questions, and writes your answers into the clarifications file | The clarifications file | Updated clarifications file |
 
 ## Contents
@@ -16,6 +17,7 @@ A workspace for producing threat risk assessments (TRAs), and the security desig
 - [Step-by-step example](#step-by-step-example)
 - [The assessor agent](#the-assessor-agent)
 - [The designer agent](#the-designer-agent)
+- [The summarizer agent](#the-summarizer-agent)
 - [Answering clarification questions](#answering-clarification-questions)
 - [ID schemes](#id-schemes)
 - [Versioning](#versioning)
@@ -31,7 +33,8 @@ A workspace for producing threat risk assessments (TRAs), and the security desig
 ├── .claude/
 │   ├── agents/
 │   │   ├── assessor.md                      # assessor agent (built from docs/spec/assessor.md)
-│   │   └── designer.md                      # designer agent (built from docs/spec/designer.md)
+│   │   ├── designer.md                      # designer agent (built from docs/spec/designer.md)
+│   │   └── summarizer.md                    # summarizer agent (built from docs/spec/summarizer.md)
 │   └── skills/clarify/
 │       └── SKILL.md                         # /clarify skill (built from docs/spec/clarify.md)
 ├── docs/
@@ -43,14 +46,16 @@ A workspace for producing threat risk assessments (TRAs), and the security desig
 │   └── spec/
 │       ├── assessor.md                      # spec for the assessor agent
 │       ├── clarify.md                       # spec for the /clarify skill
-│       └── designer.md                      # spec for the designer agent
+│       ├── designer.md                      # spec for the designer agent
+│       └── summarizer.md                    # spec for the summarizer agent
 ├── scenario/<subject>/                      # input: one folder per subject   (not in git)
 │   └── description.md
 └── output/<subject>/                        # generated documents             (not in git)
     ├── threat-risk-assessment-<subject>.md
     ├── clarifications-needed-<subject>.md
     ├── security-design-<subject>.md
-    └── security-controls-<subject>.md
+    ├── security-controls-<subject>.md
+    └── system-summary-<subject>-v<version>.md
 ```
 
 `scenario/` and `output/` are listed in `.gitignore`. They can contain sensitive details about real systems, so they stay out of version control. Back them up separately if you need to.
@@ -79,6 +84,20 @@ A workspace for producing threat risk assessments (TRAs), and the security desig
             │
             ├──► security-design-<subject>.md
             └──► security-controls-<subject>.md
+
+ At any point after the first assessment:
+
+ threat-risk-assessment-<subject>.md
+ + clarifications-needed-<subject>.md
+            │
+            ▼
+   ┌──────────────────┐
+   │    summarizer    │
+   └──────────────────┘
+            │
+            └──► system-summary-<subject>-v<version>.md
+                 (copy to scenario/<new-subject>/description.md
+                  to assess it afresh)
 ```
 
 1. **Describe the subject** in `scenario/<subject>/description.md`.
@@ -88,6 +107,8 @@ A workspace for producing threat risk assessments (TRAs), and the security desig
 5. **Repeat steps 3–4** until the questions that drive the ratings are answered.
 6. **Run the designer** to produce the security design and the control list.
 7. **Re-run the designer** whenever the TRA changes.
+
+At any point after the first assessment, **run the summarizer** for a one-document description of what is known about the system so far. The assessor can use it as source material for a fresh assessment (see [Feeding it to the assessor](#feeding-it-to-the-assessor)).
 
 ---
 
@@ -110,7 +131,7 @@ The agent runs in its own context and reports back a short summary when it finis
 
 ### Overriding defaults
 
-Both agents accept overrides in the request:
+All three agents accept overrides in the request:
 
 ```
 use the assessor agent on scenario/payroll with process docs/my-process.md
@@ -118,6 +139,8 @@ and template docs/my-template.md
 
 use the designer agent on output/payroll/threat-risk-assessment-payroll.md
 and write the design to output/payroll/design-v2.md
+
+use the summarizer agent for payroll and write it to output/payroll/payroll-baseline.md
 ```
 
 ---
@@ -201,6 +224,7 @@ This produces `security-design-public-web-server.md` and `security-controls-publ
 - Facts must come from the source material or the clarification answers, cited by file and line or question number.
 - Anything else is an **assumption**. Assumptions are recorded in §2.7 and marked `(assumed)` in tables.
 - Ratings are conservative. A control with no evidence is rated `Partial` or `Ineffective`, never `Effective`.
+- A system description from the summarizer is read by its labels: Given items are evidence, Given (unverified) items are rated conservatively, and Assumed items stay assumptions. Its Unknowns become clarification questions, and for each of its Inconsistencies the TRA records which version it used and why.
 - Owners, approvers, signatures and risk acceptance are left blank or `TBD` for humans to complete.
 
 ### Re-assessment
@@ -272,6 +296,68 @@ The control list also has a risk-coverage table, a table showing what happens to
 
 ---
 
+## The summarizer agent
+
+**Definition:** `.claude/agents/summarizer.md`. **Spec:** `docs/spec/summarizer.md`.
+
+```
+use the summarizer agent for public-web-server
+```
+
+It needs a TRA, and it can run at any stage after the first assessment. It runs on Sonnet.
+
+### Inputs
+
+| Input | Default |
+|---|---|
+| TRA | `output/<slug>/threat-risk-assessment-<slug>.md` |
+| Clarifications | `output/<slug>/clarifications-needed-<slug>.md` (read if it exists) |
+| Source material | The files the TRA cites as evidence, such as `scenario/<slug>/description.md` |
+| Output | `output/<slug>/system-summary-<slug>-v<version>.md`, or the file name you give |
+
+Every run writes a new file and leaves earlier summaries as they are. The version goes up by 0.1 each time, starting at 0.1, and the default file name ends with it, for example `system-summary-public-web-server-v0.2.md`. To choose the name yourself, give it in the request:
+
+```
+use the summarizer agent for public-web-server and write it to output/public-web-server/web-server-baseline.md
+```
+
+The summarizer won't overwrite an existing file; if the name is taken, it asks for another.
+
+It doesn't read the security design or the control list: they hold recommendations, not facts about the system as it is.
+
+### Output
+
+A description of the system as it is, laid out like a scenario file: one item per line, covering components, network and zones, technology, data and data flows, controls in place, people and access, operations, obligations, business and threat context, unknowns and inconsistencies. Every item is labelled and cites its source:
+
+| Label | Meaning | Source |
+|---|---|---|
+| **Given** | Stated in the scenario or a clarification answer | The original file and line, or the Q- answer with who answered and when |
+| **Assumed** | Assumed or inferred by the TRA | The TRA version and section, such as `TRA v0.3 §2.7 AS-04` |
+
+A Given item is tagged **Given (unverified)** when its source doesn't say who gave it, or when another source doubts it. An Item counts table near the top gives the number of items of each kind in each section.
+
+### Rules worth knowing
+
+- **No risk assessment.** It leaves out the TRA's threat analysis, vulnerability findings, asset valuations, control effectiveness, ratings, risks and treatments, and the public research the TRA did, such as end-of-life dates and CVEs. A vulnerability becomes the plain fact behind it, such as "Admin accounts use passwords only". The test for a borderline item: would it still be true if nobody had assessed the system?
+- **Context is kept separately.** Facts people gave about the threat environment, such as the organization's sector, go in a Business and threat context section, as Given items only.
+- **It adds nothing.** Anything not in the documents is listed under Unknowns, not filled in.
+- **It doesn't resolve conflicts.** Disagreements between sources are listed with both citations.
+- **It doesn't reuse TRA IDs.** The assessor assigns its own A-, C- and other IDs when it reads the summary.
+
+### Feeding it to the assessor
+
+To assess the system afresh from what is known so far, copy the summary into a new scenario folder and run the assessor on it:
+
+```
+copy output/public-web-server/system-summary-public-web-server-v0.2.md
+  to scenario/public-web-server-detail/description.md
+do a threat risk assessment for scenario/public-web-server-detail
+```
+
+The new folder name gives the assessment its own slug, so it writes to `output/public-web-server-detail/` and leaves the original TRA alone. The assessor recognises the summary and treats each item by its label (see [How it treats evidence](#how-it-treats-evidence)). The summary's citations still point at the original subject's files, so they stay traceable, but line numbers can drift if those files change later.
+
+---
+
 ## Answering clarification questions
 
 ### With the interview (recommended)
@@ -332,7 +418,7 @@ Every risk traces to its assets, threats, vulnerabilities and existing controls.
 
 ## Versioning
 
-- **Generated documents** carry their own version and revision history. Agents bump the version on every update, starting at 0.1 with Status `Draft`. Moving to "In review" or "Approved" is a human decision.
+- **Generated documents** carry their own version and revision history. Agents bump the version on every update, starting at 0.1 with Status `Draft`. The summarizer is the exception to updating in place: each version is a new file, and earlier ones are kept. Moving to "In review" or "Approved" is a human decision.
 - **Agent definitions, specs, the process and the templates** are versioned in git. The generated documents are not (`output/` is git-ignored).
 
 ---
@@ -357,6 +443,6 @@ To change how assessments are done for every subject, edit `docs/threat-risk-ass
 - **Answers are taken at face value.** The assessor uses clarification answers as given, recording who answered and when. Ask the person who actually knows; for example, Security may not know the payment integration as well as the application owner. Answers from more than one person, and verification by scans, make the ratings more reliable.
 - **Agents don't test anything.** They don't scan, probe or log in to systems. Controls stay `Partial` until someone verifies them; port scans, vulnerability scans and pen tests are recommended as evidence.
 - **Agents have no shell.** They can only read, search and write files.
-- **Web access is limited to public information.** The agents look up public threat intelligence, CVEs and standards such as PCI DSS, CIS and OWASP. They never send details of your system to external services.
+- **Web access is limited to public information.** The assessor and designer look up public threat intelligence, CVEs and standards such as PCI DSS, CIS and OWASP. They never send details of your system to external services. The summarizer has no web access.
 - **Humans own the decisions.** Risk acceptance, sign-off, owners and design decisions are left blank or `TBD` on purpose.
 - **Review before you rely on it.** Agent output is a draft for a qualified reviewer, not a substitute for one.

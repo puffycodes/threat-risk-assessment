@@ -27,7 +27,7 @@ If the output file already exists, read it first and update it rather than overw
 1. **Load the process.** Read the process file in full. Its steps define the work, in that order. Do not skip or reorder steps.
 2. **Load the template.** Read the template file in full. Its structure defines the output: keep its section headings, numbering and table columns.
 3. **Load existing outputs.** If the output file or the clarifications file already exists, read it in full. Answers a human has written into the clarifications file are source material: cite them as evidence and use them in place of the assumptions they resolve.
-4. **Gather evidence about the subject.** Read every file or directory you were pointed to. For a codebase or configuration, use Glob and Grep to find architecture, data stores, authentication, network exposure, dependencies, secrets handling, logging and backups. Use WebSearch or WebFetch only for public threat intelligence or vulnerability information (such as CVEs for identified component versions), and for public standards and guidance (such as PCI DSS requirements). Record what you use as evidence. Never send details of the subject to external services.
+4. **Gather evidence about the subject.** Read every file or directory you were pointed to. For a codebase or configuration, use Glob and Grep to find architecture, data stores, authentication, network exposure, dependencies, secrets handling, logging and backups. Use WebSearch or WebFetch only for public threat intelligence or vulnerability information (such as CVEs for identified component versions), and for public standards and guidance (such as PCI DSS requirements). Record what you use as evidence. Never send details of the subject to external services. If a source file is a system description written by the summarizer, read it as described in System descriptions from the summarizer below.
 5. **Go through the process.** Take each process step in turn and produce its outputs:
    - Scope and context, including the risk criteria. Use the template's default scales unless the request or source material supplies others.
    - Assets, with confidentiality, integrity and availability ratings
@@ -51,6 +51,7 @@ If the output file already exists, read it first and update it rather than overw
    - The residual counts in §10 match §9.
    - The executive summary counts match §8.
    - Every open question in Appendix B appears in the clarifications file, and the reverse.
+   - If the source includes a summarizer system description: no Assumed item from it is cited as evidence, and every item under its Inconsistencies is recorded with the version you used.
 
 ## Re-assessment
 
@@ -111,6 +112,23 @@ The clarifications file is where a human answers the questions the assessment co
 - Cite evidence wherever you state a fact: in the vulnerability "Source / evidence" column, in control notes, and in the text. Use file paths with line numbers, document names, interview notes, or clarification answers (for example `clarifications-needed-<slug>.md Q-03`).
 - Rate conservatively. When evidence for a control is missing, treat the control as `Partial` or `Ineffective`, not `Effective`.
 - Do not modify the process or template files.
+
+## System descriptions from the summarizer
+
+Source material may be a system description written by the summarizer agent from an earlier assessment. You can recognise one by its title, which starts `System Description:`, and its "How to use this file" section. Each item starts with a label and ends with its source. Treat each item by its label:
+
+| Label | How to treat it |
+|---|---|
+| **Given** | Evidence. Cite the description's file and line, and note the original source it cites, for example `scenario/x/description.md:51 (from clarifications-needed-x.md Q-17)`. |
+| **Given (unverified)** | Evidence that needs care: who gave it isn't recorded, or it is in doubt. Rate conservatively, as if the fact or control were only partly evidenced, and raise a clarification question where it drives a rating. |
+| **Assumed** | An assumption from the earlier assessment, not evidence. Record it in §2.7 and mark it `(assumed)` in tables. |
+
+Treat its sections as follows:
+- **Business and threat context:** facts people gave about the environment. Use them as evidence for threat likelihood and motivation.
+- **Unknowns:** gaps, not assumptions. Raise a clarification question for each one that could change a rating. Where you have to assume something to rate a risk, record the assumption in §2.7.
+- **Inconsistencies:** disagreements between earlier sources. Don't resolve them silently. Record which version you use and why, in §2.7 or the rating rationale, and raise a clarification question where the choice affects a rating.
+
+The description's item counts, and any IDs inside its Source citations, belong to the earlier assessment. Assign your own IDs. Don't modify the description or the earlier assessment files it cites.
 
 ## Final response
 
