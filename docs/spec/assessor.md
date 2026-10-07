@@ -71,6 +71,14 @@
 - Cite evidence (file paths with line numbers, document names, interview notes, clarification answers such as `clarifications-needed-<slug>.md Q-03`)
 - Rate conservatively: a control with no evidence is Partial or Ineffective, not Effective
 
+### Likelihood and risk scenarios
+
+- Every claim about threat activity used to set a likelihood (for example, "phishing is common against this sector") must cite a source: public threat intelligence, an incident history, or a clarification answer
+    - Don't infer the organization's sector or profile from indirect clues, such as a job title; if it matters, raise a clarification question
+    - Without a cited source, base the likelihood only on the system's own exposure and controls, and say so in the rating rationale
+- Give the same event the same likelihood in every risk that depends on it (for example, a stolen administrator password used to log in), or explain the difference in the rating rationale
+- When one way in leads to outcomes with different impacts, either score each outcome as its own risk, or, if they are combined, say in the rating rationale why the likelihood applies to the worst outcome
+
 ### System descriptions from the summarizer
 
 - Source material may be a system description written by the summarizer agent (its title starts "System Description:" and it has a "How to use this file" section); treat each item by its label:
@@ -98,6 +106,8 @@
 - Executive summary counts match §8
 - Every open question in Appendix B appears in the clarifications file, and the reverse
 - For a summarizer system description: no Assumed item is cited as evidence, and every Inconsistency is recorded with the version used
+- Every threat-activity claim in a likelihood rationale cites a source
+- Risks that share an event give it the same likelihood, or the rationale explains why not
 
 ## Final response
 

@@ -34,7 +34,7 @@ If the output file already exists, read it first and update it rather than overw
    - Threats
    - Vulnerabilities
    - Existing controls and how effective they are
-   - Likelihood and impact for each threat–vulnerability–asset scenario
+   - Likelihood and impact for each threat–vulnerability–asset scenario (see Rules for likelihood and risk scenarios)
    - Risk scores and ratings using the template's risk matrix
    - Treatment recommendations and residual risk
    - Monitoring and review recommendations
@@ -52,6 +52,8 @@ If the output file already exists, read it first and update it rather than overw
    - The executive summary counts match §8.
    - Every open question in Appendix B appears in the clarifications file, and the reverse.
    - If the source includes a summarizer system description: no Assumed item from it is cited as evidence, and every item under its Inconsistencies is recorded with the version you used.
+   - Every claim about threat activity in a likelihood rationale cites a source.
+   - Risks that share an event give it the same likelihood, or the rationale explains why not.
 
 ## Re-assessment
 
@@ -112,6 +114,13 @@ The clarifications file is where a human answers the questions the assessment co
 - Cite evidence wherever you state a fact: in the vulnerability "Source / evidence" column, in control notes, and in the text. Use file paths with line numbers, document names, interview notes, or clarification answers (for example `clarifications-needed-<slug>.md Q-03`).
 - Rate conservatively. When evidence for a control is missing, treat the control as `Partial` or `Ineffective`, not `Effective`.
 - Do not modify the process or template files.
+
+## Rules for likelihood and risk scenarios
+
+- **Cite threat activity.** Every claim about threat activity that you use to set a likelihood, such as "phishing is common against this sector", must cite a source: public threat intelligence, an incident history, or a clarification answer. Without one, base the likelihood only on the system's own exposure and controls, and say so in the rating rationale.
+- **Don't guess the organization's profile.** Don't infer its sector, size or attractiveness to attackers from indirect clues, such as a job title or department name. If it matters to a rating, raise a clarification question.
+- **Keep shared events consistent.** When several risks depend on the same event, such as a stolen administrator password used to log in, give that event the same likelihood in each, or explain the difference in the rating rationale.
+- **Be explicit when combining outcomes.** When one way in leads to outcomes with different impacts, either score each outcome as its own risk, or, if you combine them, say in the rating rationale why the likelihood applies to the worst outcome.
 
 ## System descriptions from the summarizer
 

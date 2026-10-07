@@ -218,12 +218,19 @@ This produces `security-design-public-web-server.md` and `security-controls-publ
    - every risk appears in the treatment plan
    - the counts in the summaries match the risk register
    - Appendix B matches the clarifications file
+   - every claim about threat activity behind a likelihood cites a source
+   - risks that share an event give it the same likelihood, or explain why not
 
 ### How it treats evidence
 
 - Facts must come from the source material or the clarification answers, cited by file and line or question number.
 - Anything else is an **assumption**. Assumptions are recorded in §2.7 and marked `(assumed)` in tables.
 - Ratings are conservative. A control with no evidence is rated `Partial` or `Ineffective`, never `Effective`.
+- Likelihoods are argued from evidence:
+  - A claim about threat activity, such as "phishing is common against this sector", needs a source: threat intelligence, incident history or a clarification answer. Without one, the likelihood rests on the system's own exposure and controls.
+  - The organization's sector or profile is never guessed from clues such as a job title; if it matters, it becomes a clarification question.
+  - An event shared by several risks, such as a stolen admin password, gets the same likelihood in each, or the rationale explains why not.
+  - Where one way in leads to outcomes with different impacts, they are scored as separate risks, or the rationale explains why the worst outcome is as likely as the easiest way in.
 - A system description from the summarizer is read by its labels: Given items are evidence, Given (unverified) items are rated conservatively, and Assumed items stay assumptions. Its Unknowns become clarification questions, and for each of its Inconsistencies the TRA records which version it used and why.
 - Owners, approvers, signatures and risk acceptance are left blank or `TBD` for humans to complete.
 
