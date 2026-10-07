@@ -363,6 +363,8 @@ do a threat risk assessment for scenario/public-web-server-detail
 
 The new folder name gives the assessment its own slug, so it writes to `output/public-web-server-detail/` and leaves the original TRA alone. The assessor recognises the summary and treats each item by its label (see [How it treats evidence](#how-it-treats-evidence)). The summary's citations still point at the original subject's files, so they stay traceable, but line numbers can drift if those files change later.
 
+The new subject gets its own clarifications file. Answers given there, for example with `/clarify public-web-server-detail`, apply only to the new subject: the original TRA doesn't receive them unless you answer its questions too.
+
 ---
 
 ## Answering clarification questions
@@ -379,7 +381,9 @@ Type `/clarify` and the subject in Claude Code:
 
 Claude asks who is answering, then goes through the open questions, most important first. It asks up to four at a time and offers multiple-choice answers where they fit. Type your own answer whenever the options don't fit, choose "Don't know", or type `stop` to finish early. Answers are saved to the clarifications file after each batch, with **Answered by** and **Answered on**, so nothing is lost if you stop part-way.
 
-If an answer contradicts an earlier answer or a fact in the TRA, Claude quotes both and asks which is right before saving. The interview never changes a question's status, never re-assesses, and never records secrets such as passwords or full card numbers. It is a skill rather than an agent because it needs to ask you questions as it goes, and agents run in the background.
+If an answer contradicts an earlier answer or a fact in the TRA, Claude quotes both and asks which is right before saving. If you confirm that something has changed since, for example a control added after the TRA was written, the answer says so. The earlier statement isn't edited, so the record shows both.
+
+The assessor takes answers at face value. If an answer would lower a rating and it overturns what someone else said, such as the System owner, have that person confirm it, or supply evidence like a configuration export or a log sample, before you re-assess. The interview never changes a question's status, never re-assesses, and never records secrets such as passwords or full card numbers. It is a skill rather than an agent because it needs to ask you questions as it goes, and agents run in the background.
 
 ### By editing the file
 
