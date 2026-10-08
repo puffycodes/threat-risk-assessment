@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assessment Browser</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#/">Assessment Browser</a>
+  <span class="crumbs" id="crumbs"></span>
+  <span class="spacer"></span>
+  <span class="live" id="live" title="The page reloads documents when they change on disk">Live</span>
+  <button type="button" class="theme" id="theme" aria-label="Change theme">Auto</button>
+</header>
+<main id="app" tabindex="-1"><p class="muted pad">Loading…</p></main>
+<div class="tip" id="tip" role="tooltip" hidden></div>
+<div class="toast" id="toast" hidden></div>
+<script src="/app.js"></script>
+</body>
+</html>

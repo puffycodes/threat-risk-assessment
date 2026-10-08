@@ -1,3 +1,7 @@
 scenario/
 output/
 graphify-out/
+
+# Python bytecode (assessment browser)
+__pycache__/
+*.pyc

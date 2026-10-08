@@ -9,6 +9,8 @@ A workspace for producing threat risk assessments (TRAs), and the security desig
 | `summarizer` | Summarizes the assessment so far into a description of the system (design, controls, data flows), with no risk assessment in it. Marks each item as given or assumed, and can be fed back to the assessor | The TRA (+ clarifications file) | System description |
 | `/clarify` (skill) | Interviews you to answer the open clarification questions, and writes your answers into the clarifications file | The clarifications file | Updated clarifications file |
 
+To read the results, the [assessment browser](#browsing-the-assessments) shows every subject's documents in a web browser. It's a small local web server and doesn't use any agent or skill.
+
 ## Contents
 
 - [Repository layout](#repository-layout)
@@ -19,6 +21,7 @@ A workspace for producing threat risk assessments (TRAs), and the security desig
 - [The designer agent](#the-designer-agent)
 - [The summarizer agent](#the-summarizer-agent)
 - [Answering clarification questions](#answering-clarification-questions)
+- [Browsing the assessments](#browsing-the-assessments)
 - [ID schemes](#id-schemes)
 - [Versioning](#versioning)
 - [Changing the agents](#changing-the-agents)
@@ -47,7 +50,11 @@ A workspace for producing threat risk assessments (TRAs), and the security desig
 │       ├── assessor.md                      # spec for the assessor agent
 │       ├── clarify.md                       # spec for the /clarify skill
 │       ├── designer.md                      # spec for the designer agent
-│       └── summarizer.md                    # spec for the summarizer agent
+│       ├── summarizer.md                    # spec for the summarizer agent
+│       └── assessment-browser/features.md   # spec for the assessment browser
+├── tools/assessment-browser/
+│   ├── serve.py                             # assessment browser: local, read-only web server
+│   └── static/                              # the browser app (HTML, JavaScript, CSS)
 ├── scenario/<subject>/                      # input: one folder per subject   (not in git)
 │   └── description.md
 └── output/<subject>/                        # generated documents             (not in git)
@@ -405,6 +412,30 @@ Each question in `clarifications-needed-<slug>.md` looks like this:
 - **Don't delete or renumber questions.** Appendix B in the TRA uses the same numbers.
 
 When you've answered a batch, ask for a re-assessment.
+
+---
+
+## Browsing the assessments
+
+The assessment browser shows the documents in `scenario/` and `output/` in a web browser, with the IDs linked together. It needs only Python 3 and doesn't use any agent or skill. Start it from the repository root:
+
+```
+python tools/assessment-browser/serve.py
+```
+
+It opens http://127.0.0.1:8765/ in your browser. Use `--port <n>` to pick another port and `--no-open` to skip opening the browser. Press Ctrl+C to stop it.
+
+What it shows:
+
+- **Subjects:** every folder under `scenario/` or `output/`, with the TRA version, risk counts and open questions.
+- **Overview** for a subject: risk counts before and after treatment, a risk matrix (current or after treatment), a risk register you can sort and filter, and the list of documents. The matrix uses the bands from the TRA's own §3.4 risk matrix.
+- **Questions:** the clarification questions, filtered by status. *Answered, not yet assessed* means the question has an answer but its status is still Open, so the answer is waiting for a re-assessment.
+- **Documents:** each document rendered, with a table of contents. Every ID (R-, A-, T-, V-, C-, AS-, E-, Q-, SC-, DP-, F-, DD-, SE-) links to where it's defined, in whichever document defines it, and shows the definition when you hover over it. File references such as `clarifications-needed-<subject>.md:52` open the source at that line. *Source* shows the Markdown with line numbers.
+- **Search** across all of a subject's documents.
+
+The page reloads documents when they change on disk, so you can leave it open while an agent works.
+
+The server is read-only and listens on 127.0.0.1 only, so other machines can't reach it. It serves only the `.md` files under `scenario/` and `output/`. The pages load nothing from the Internet.
 
 ---
 
