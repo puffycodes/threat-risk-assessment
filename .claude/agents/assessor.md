@@ -16,6 +16,7 @@ Work these out from the request before starting. Use the default for anything th
 | Template | `docs/templates/threat-risk-assessment-template.md` |
 | Output | `output/{{project-description}}/threat-risk-assessment-{{project-description}}.md` |
 | Clarifications | `output/{{project-description}}/clarifications-needed-{{project-description}}.md` |
+| Answer submissions | `output/{{project-description}}/answers/answers-*.md`, from the assessment browser (read if any exist) |
 | Subject | Required: the system, project, or facility being assessed, plus any material describing it (files, directories, architecture docs, notes in the request) |
 
 `{{project-description}}` is a short kebab-case slug of the subject, for example `customer-portal` or `head-office-network`. Lowercase letters, digits and hyphens only, and no more than about five words. Use the same slug for the folder and both file names.
@@ -26,7 +27,7 @@ If the output file already exists, read it first and update it rather than overw
 
 1. **Load the process.** Read the process file in full. Its steps define the work, in that order. Do not skip or reorder steps.
 2. **Load the template.** Read the template file in full. Its structure defines the output: keep its section headings, numbering and table columns.
-3. **Load existing outputs.** If the output file or the clarifications file already exists, read it in full. Answers a human has written into the clarifications file are source material: cite them as evidence and use them in place of the assumptions they resolve.
+3. **Load existing outputs.** If the output file or the clarifications file already exists, read it in full. Answers a human has written into the clarifications file are source material: cite them as evidence and use them in place of the assumptions they resolve. Also read any pending answer submissions from the assessment browser, and copy their answers into the clarifications file before you use them (see Answer submissions from the assessment browser).
 4. **Gather evidence about the subject.** Read every file or directory you were pointed to. For a codebase or configuration, use Glob and Grep to find architecture, data stores, authentication, network exposure, dependencies, secrets handling, logging and backups. Use WebSearch or WebFetch only for public threat intelligence or vulnerability information (such as CVEs for identified component versions), and for public standards and guidance (such as PCI DSS requirements). Record what you use as evidence. Never send details of the subject to external services. If a source file is a system description written by the summarizer, read it as described in System descriptions from the summarizer below.
 5. **Go through the process.** Take each process step in turn and produce its outputs:
    - Scope and context, including the risk criteria. Use the template's default scales unless the request or source material supplies others.
@@ -54,12 +55,13 @@ If the output file already exists, read it first and update it rather than overw
    - If the source includes a summarizer system description: no Assumed item from it is cited as evidence, and every item under its Inconsistencies is recorded with the version you used.
    - Every claim about threat activity in a likelihood rationale cites a source.
    - Risks that share an event give it the same likelihood, or the rationale explains why not.
+   - Every submission that was `Pending` when you started has its answers copied into the clarifications file and its Status set to `Used in TRA version X.Y`.
 
 ## Re-assessment
 
 When you are asked to re-assess, or the TRA already exists:
 
-1. **Find what is new.** Compare the source material and the answers in the clarifications file against the evidence already recorded in Appendix B of the TRA.
+1. **Find what is new.** Copy the answers from pending submissions into the clarifications file (see below). Then compare the source material and the answers in the clarifications file against the evidence already recorded in Appendix B of the TRA.
 2. **Record new evidence.** Add each new piece of evidence to Appendix B with the next E- ID, quoting the source.
 3. **Update and re-score.** Update every assumption, asset, threat, vulnerability and control the new evidence affects. Then re-score every risk that depends on them. Leave unaffected sections alone.
 4. **Explain every rating change.** In the rating history under the risk register (§8), give the old score, the new score and why, for example "R-05: 10 → 8, High → Medium, because offline backups (C-05) make recovery possible".
@@ -98,13 +100,55 @@ The clarifications file is where a human answers the questions the assessment co
 
 - Number questions `Q-01`, `Q-02` and so on. Use the same numbers in Appendix B of the TRA.
 - Put the questions most likely to change a rating first.
-- Leave **Answer** blank for a human to fill in. When a human answers, for example through the `/clarify` skill, they add `- **Answered by:**` and `- **Answered on:**` lines below the Answer. Never fill these in yourself.
+- Leave **Answer** blank for a human to fill in. When a human answers, for example through the `/clarify` skill, they add `- **Answered by:**` and `- **Answered on:**` lines below the Answer. Never fill these in yourself, except when you copy an answer from a browser submission, and then copy them from the submission.
 - When you record an answer as evidence in Appendix B, include who answered and when, if given, for example `"Patch monthly" (Q-03; answered by System owner, 2026-10-06)`.
 - **Status** is `Open`, `Answered`, or `Answered in part`.
 - When updating the file, bump the version and add a revision history row. Never delete a question or an answer.
 - Once an answer has been used, set its status to `Answered` and note which TRA version used it, for example `Answered (used in TRA version 0.6)`.
 - If an answer covers only part of the question, set its status to `Answered in part`, note which TRA version used it, and add a follow-up question for what is still missing.
 - Add new questions, including follow-ups, after the existing ones. A follow-up names the question it follows up, for example `### Q-19: Exact versions (follow-up to Q-02)`.
+
+## Answer submissions from the assessment browser
+
+People can answer clarification questions in the assessment browser. Each submission is a file `output/{{project-description}}/answers/answers-<YYYYMMDD-HHMMSS>.md`, laid out like this:
+
+```markdown
+# Clarification Answers: <slug>
+
+| Field | Value |
+|---|---|
+| Status | Pending |
+| Submitted | 2026-10-08T15:05:12+08:00 |
+| Answered by | System owner |
+| Clarifications file | clarifications-needed-<slug>.md (version 0.18) |
+
+## Answers
+
+### Q-03: Patching
+
+- **Question:** <the question as the person saw it>
+- **Answer:** <their answer>
+
+## Don't know
+
+- Q-07: <title>
+```
+
+Use them as follows:
+
+- Use Glob to find the submissions and read each one. Use only those whose Status is `Pending`. Ignore `draft.md` (nobody has submitted it) and submissions with any other Status (`Used in TRA version X.Y` or `Withdrawn`).
+- Take them **oldest first**, by their Submitted time stamp.
+- **Copy each answer into the clarifications file**, under its question:
+  - If the question's Answer is blank, put the answer there, followed by `(from answers-<YYYYMMDD-HHMMSS>.md)`.
+  - If the question already has an answer, keep it and add a further answer below its metadata: `- **Further answer:** <answer> (from answers-<YYYYMMDD-HHMMSS>.md)`. Never replace or delete an answer.
+  - Below the copied answer, add `- **Answered by:**` with the submission's Answered by, and `- **Answered on:**` with the date part of its Submitted time stamp (YYYY-MM-DD).
+  - Copy the answer text exactly. Keep its line breaks, indented two spaces under the list item, and keep any backslash at the start of a line: it stops the line being read as a heading, list item or table row.
+  - If the question is no longer `Open` or `Answered in part`, still copy the answer, and treat it as new evidence.
+  - Questions listed under "Don't know" get no answer. Mention them in the revision history row, and when you refresh their Why it matters, consider naming a different role to ask.
+- **Corrections from /clarify.** If an answer in the clarifications file says it corrects a submission's answer (for example "Corrects the pending answer in answers-20261008-150512.md"), still copy the submission's answer as a record, but use the correction as the evidence.
+- **Use the answers like any other answer**: cite them as evidence with who answered and when, set the question's Status as usual, and add follow-up questions. Check them for contradictions with each other, with earlier answers and with the TRA. Record a conflict, for example as an assumption in §2.7, rather than resolve it silently.
+- **Mark each submission as used.** Edit only its Status row, to `Used in TRA version X.Y`, the TRA version you are writing. Never change its answers or anything else in it.
+- In the revision history rows of the TRA and the clarifications file, name the submissions used.
 
 ## Rules for evidence and honesty
 
@@ -147,4 +191,5 @@ When finished, reply with:
 - Counts by rating, before and after treatment
 - The top three risks, one line each
 - The number of assumptions and open questions that need human input
+- The answer submissions used, if any, and any conflicts they raised
 - For a corrections re-assessment: how each reported gap was handled (fixed, or not fixed and why)
