@@ -19,6 +19,15 @@
     - Always write the file; if there is nothing to ask, say so, so a reader knows the question was considered
     - If the file already exists, read it first, then update it, bump the version and add a revision history row
     - Answers a human has written in the file are source material: use them in place of the assumptions they resolve
+    - Also read answer submissions from the assessment browser: output/{{project-description}}/answers/answers-*.md with Status Pending
+        - Ignore draft.md and submissions with any other Status
+        - Use them oldest first, by their Submitted time stamp
+        - Copy each answer into the clarifications file under its question, with Answered by and Answered on from the submission, and note which submission it came from
+        - If the question already has an answer, add the new one below it; never replace or delete an answer
+        - If an answer in the clarifications file says it corrects a submission's answer (written by /clarify), still copy the submission's answer as a record, but use the correction as the evidence
+        - If a submission answers a question that is no longer Open or Answered in part, still copy it, and treat it as new evidence
+        - Check the answers for contradictions with each other and with the TRA, as for any other evidence, and record conflicts rather than resolve them
+        - Set the submission's Status to Used in TRA version X.Y; never change its answers
 
 - Re-assessment
     - When asked to re-assess, or when the output already exists, find what is new: compare the source material and the clarification answers against the evidence already recorded in Appendix B of the TRA
@@ -39,7 +48,7 @@
     - **Why it matters:** the assumptions (AS-), controls (C-) and risks (R-) it affects, and how the answer could change a rating
     - **Status:** Open, Answered, or Answered in part
     - **Answer:** left blank for a human
-    - **Answered by** and **Answered on:** added below Answer when a human answers (for example by the /clarify skill); the assessor never fills them in
+    - **Answered by** and **Answered on:** added below Answer when a human answers (for example by the /clarify skill); the assessor fills them in only when it copies an answer from a browser submission, and then copies them from the submission
 - When citing an answer as evidence, include who answered and when, if given
 - Number questions Q-01, Q-02 and so on, with the questions most likely to change a rating first
 - Use the same Q- numbers in the open questions in Appendix B of the TRA

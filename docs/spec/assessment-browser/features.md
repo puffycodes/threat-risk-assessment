@@ -3,6 +3,7 @@
 ## Purpose
 
 - Allow a user to browse the threat risk assessment and other related information on a web browser.
+- Allow a user to answer clarification questions; see clarification-submission.md.
 
 ## Requirement
 
@@ -15,6 +16,7 @@
     - The list of documents, with their version, status, date and when the file last changed
 - Show the clarification questions, filtered by status
     - Show questions that have an answer but are still Open as answered but not yet assessed
+    - Show pending submissions from clarification-submission.md, and which questions they answer
 - Show each document rendered from its Markdown, with a table of contents
     - Also show the Markdown source with line numbers
     - For a system summary, link to its other versions
@@ -25,12 +27,12 @@
 - Update the page when a document changes on disk
 - Work on a phone-sized screen, in light and dark themes
 - The documents can describe real systems, so:
-    - Only read files; never change them
+    - Only read files; never change them, except the answer drafts and submissions described in clarification-submission.md
     - Only serve the .md files under scenario/ and output/
     - Only accept connections from the same machine
     - Load nothing from the Internet
     - Never run anything written in a document as code in the page
 
-## Contraint
+## Constraint
 
 - Should not need to invoke any agents or skills.
