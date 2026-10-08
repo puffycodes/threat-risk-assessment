@@ -117,6 +117,8 @@ To read the results, the [assessment browser](#browsing-the-assessments) shows e
 
 At any point after the first assessment, **run the summarizer** for a one-document description of what is known about the system so far. The assessor can use it as source material for a fresh assessment (see [Feeding it to the assessor](#feeding-it-to-the-assessor)).
 
+At any step, **read the results in the [assessment browser](#browsing-the-assessments)**. It shows the risk matrix, the open questions and the documents, with every ID linked to where it's defined, and it updates while the agents work.
+
 ---
 
 ## Running the agents
@@ -195,6 +197,14 @@ use the designer agent for public-web-server
 ```
 
 This produces `security-design-public-web-server.md` and `security-controls-public-web-server.md`.
+
+**6. Review.** In a terminal, outside Claude Code:
+
+```
+python tools/assessment-browser/serve.py
+```
+
+Open the subject to see the risk matrix and register, then go through the TRA, design and controls. Hover over an ID such as `R-03` to see its definition, or click it to go there. The **Questions** tab shows which answers are still waiting for a re-assessment.
 
 ---
 
@@ -417,7 +427,9 @@ When you've answered a batch, ask for a re-assessment.
 
 ## Browsing the assessments
 
-The assessment browser shows the documents in `scenario/` and `output/` in a web browser, with the IDs linked together. It needs only Python 3 and doesn't use any agent or skill. Start it from the repository root:
+**Code:** `tools/assessment-browser/`. **Spec:** `docs/spec/assessment-browser/features.md`.
+
+The assessment browser shows the documents in `scenario/` and `output/` in a web browser, with the IDs linked together. It needs only Python 3.7 or later (no packages to install) and a current web browser, and it doesn't use any agent or skill. Start it from the repository root:
 
 ```
 python tools/assessment-browser/serve.py
@@ -436,6 +448,20 @@ What it shows:
 The page reloads documents when they change on disk, so you can leave it open while an agent works.
 
 The server is read-only and listens on 127.0.0.1 only, so other machines can't reach it. It serves only the `.md` files under `scenario/` and `output/`. The pages load nothing from the Internet.
+
+### What it relies on
+
+The browser reads the documents as the templates lay them out. If a page looks wrong after a template change, check these:
+
+| Feature | Needs |
+|---|---|
+| Version, status and date | A `Field \| Value` table with `Version`, `Status` and `Date` (or `Assessment date`) rows |
+| Risk register and matrix | In the TRA, a table whose first column is `Risk ID` with `L`, `I`, `Score` and `Rating` columns (§8) |
+| Ratings after treatment | A `Risk ID` table with `Residual L`, `Residual I`, `Residual score` and `Residual rating` columns (§9) |
+| Matrix colours | A table whose first heading contains `Likelihood`, with cells such as `15 H` (§3.4) |
+| Questions | In the clarifications file, `### Q-nn: Title` headings followed by `- **Status:**`, `- **Answer:**` and other `- **Field:**` lines |
+| ID links | An ID is defined by a table row whose first cell starts with it, a heading that starts with it (`### Q-01: ...`), or a list item that starts with it in bold (`- **AS-01:** ...`) |
+| Document type | The file names shown in [Repository layout](#repository-layout); other `.md` files are shown under their own name |
 
 ---
 
@@ -461,7 +487,7 @@ Every risk traces to its assets, threats, vulnerabilities and existing controls.
 ## Versioning
 
 - **Generated documents** carry their own version and revision history. Agents bump the version on every update, starting at 0.1 with Status `Draft`. The summarizer is the exception to updating in place: each version is a new file, and earlier ones are kept. Moving to "In review" or "Approved" is a human decision.
-- **Agent definitions, specs, the process and the templates** are versioned in git. The generated documents are not (`output/` is git-ignored).
+- **Agent definitions, specs, the process, the templates and the assessment browser** are versioned in git. The generated documents are not (`output/` is git-ignored).
 
 ---
 
@@ -475,7 +501,15 @@ To change an agent's behaviour:
 2. Ask Claude Code to rebuild the agent from the spec, for example: `rewrite the agent at docs/spec/assessor.md`.
 3. Review the diff and commit both files together.
 
-To change how assessments are done for every subject, edit `docs/threat-risk-assessment-process.md` or the templates in `docs/templates/`. The agents read them on every run and never modify them.
+To change how assessments are done for every subject, edit `docs/threat-risk-assessment-process.md` or the templates in `docs/templates/`. The agents read them on every run and never modify them. If you rename a table column or change how questions are laid out, check that the assessment browser still reads them (see [What it relies on](#what-it-relies-on)).
+
+### Changing the assessment browser
+
+The browser is code, not an agent, but it follows the same pattern: `docs/spec/assessment-browser/features.md` says what it must do.
+
+1. Edit the spec.
+2. Ask Claude Code to update the browser to match, for example: `update the assessment browser to match docs/spec/assessment-browser/features.md`.
+3. Run it against the subjects in `output/` and check the pages, then commit the spec and the code together.
 
 ---
 
