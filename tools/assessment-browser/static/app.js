@@ -20,7 +20,7 @@ const RATINGS = ['Critical', 'High', 'Medium', 'Low'];
 const BAND_LETTER = { C: 'Critical', H: 'High', M: 'Medium', L: 'Low' };
 const KIND_SHORT = {
   scenario: 'Scenario', tra: 'TRA', clarifications: 'Clarifications', design: 'Design',
-  controls: 'Controls', summary: 'Summary', other: 'Other',
+  controls: 'Controls', summary: 'Summary', submission: 'Answers', other: 'Other',
 };
 const Q_STATUS = [
   ['open', 'Open'],
@@ -42,6 +42,8 @@ const state = {
   ui: new Map(),        // slug -> view state (filters, sort)
   view: '',             // key of the view on screen
   subject: null,        // built subject on screen
+  sessions: new Map(),  // slug -> answering session (the draft being edited)
+  reviewing: new Set(), // slugs whose answer page shows Review and submit
 };
 
 // ---------------------------------------------------------------- utilities
@@ -451,13 +453,52 @@ function parseQuestions(text) {
     x.statusText = plain(get('status'));
     const answered = plain(get('answer')).length > 0;
     const s = x.statusText.toLowerCase();
-    x.status = /^answered in part/.test(s) ? 'partial'
+    // fileStatus is the Status as written; status also counts an answer that
+    // no re-assessment has used yet.
+    x.fileStatus = /^answered in part/.test(s) ? 'partial'
       : /^answered/.test(s) ? 'answered'
-        : /^open/.test(s) || !s ? (answered ? 'pending' : 'open')
+        : /^open/.test(s) || !s ? 'open'
           : 'other';
+    x.status = x.fileStatus === 'open' && answered ? 'pending' : x.fileStatus;
+    x.pendingAnswers = [];
   }
   return qs;
 }
+
+const fieldOf = (q, name) => (q.fields.find(f => f[0].toLowerCase() === name) || [])[1] || '';
+
+// An answer submission written by the browser (serve.py, submit()).
+function parseSubmission(text) {
+  const t = parseTables(text).find(x => /^field$/i.test(x.headers[0]));
+  const meta = {};
+  if (t) for (const r of t.rows) meta[plain(r[0]).toLowerCase()] = plain(r[1] || '');
+  const unescape = s => s.replace(/^\\(?=[#|>\-*+\d`~])/gm, '');
+  const answers = parseQuestions(text).map(q => ({
+    id: q.id,
+    title: q.title,
+    question: fieldOf(q, 'question'),
+    answer: unescape(fieldOf(q, 'answer')),
+  }));
+  const dontKnow = [];
+  let inDontKnow = false;
+  for (const line of text.split(/\r?\n/)) {
+    if (HEADING_RE.test(line)) { inDontKnow = /^##\s+don.t know/i.test(line); continue; }
+    const m = inDontKnow && line.match(/^\s*-\s+(Q-\d{1,3})\b[:\s]*(.*)$/);
+    if (m) dontKnow.push({ id: m[1], title: plain(m[2]) });
+  }
+  const status = meta.status || '';
+  return {
+    status,
+    pending: /^pending/i.test(status),
+    submitted: meta.submitted || '',
+    answeredBy: meta['answered by'] || '',
+    clarifications: meta['clarifications file'] || '',
+    answers,
+    dontKnow,
+  };
+}
+
+const fmtStamp = iso => String(iso).replace('T', ' ').slice(0, 16);
 
 // ------------------------------------------------------------- data loading
 
@@ -485,7 +526,10 @@ async function buildSubject(slug) {
   if (!subj) return null;
   const sig = subj.docs.map(d => `${d.path}:${d.mtime}`).join('|');
   const cached = state.subjects.get(slug);
-  if (cached && cached.sig === sig) return cached;
+  if (cached && cached.sig === sig) {
+    cached.hasDraft = !!subj.draft;
+    return cached;
+  }
 
   const docs = await Promise.all(subj.docs.map(async d => {
     const e = await loadDoc(d);
@@ -506,6 +550,15 @@ async function buildSubject(slug) {
   const clar = docs.find(d => d.kind === 'clarifications');
   const scen = docs.find(d => d.kind === 'scenario');
   const titleSrc = (tra && tra.title) || (scen && scen.title) || '';
+  const questions = clar ? parseQuestions(clar.text) : [];
+  const submissions = docs.filter(d => d.kind === 'submission').map(d => ({ doc: d, ...parseSubmission(d.text) }));
+  for (const sub of submissions.filter(x => x.pending)) {
+    for (const a of sub.answers) {
+      const q = questions.find(x => x.id === a.id);
+      if (q) q.pendingAnswers.push({ sub, answer: a.answer });
+    }
+  }
+  for (const q of questions) if (q.status === 'open' && q.pendingAnswers.length) q.status = 'pending';
   const built = {
     slug,
     sig,
@@ -515,7 +568,9 @@ async function buildSubject(slug) {
     clar,
     title: titleSrc.replace(/^[^:]*:\s*/, '') || slug,
     risks: tra ? parseRisks(tra.text) : null,
-    questions: clar ? parseQuestions(clar.text) : [],
+    questions,
+    submissions,
+    hasDraft: !!subj.draft,
     mtime: Math.max(0, ...docs.map(d => d.mtime)),
   };
   state.subjects.set(slug, built);
@@ -579,19 +634,25 @@ async function viewHome() {
     const open = b.questions.filter(q => q.status === 'open' || q.status === 'partial').length;
     const pending = b.questions.filter(q => q.status === 'pending').length;
     const meta = b.tra ? b.tra.meta : null;
-    const kinds = [...new Set(b.docs.map(d => KIND_SHORT[d.kind]))].join(' · ');
+    const kinds = [...new Set(b.docs.filter(d => d.kind !== 'submission').map(d => KIND_SHORT[d.kind]))].join(' · ');
+    const subs = b.submissions.filter(s => s.pending).length;
+    const answerNotes = [
+      subs && `${subs} pending submission${subs === 1 ? '' : 's'}`,
+      b.hasDraft && 'unsubmitted draft',
+    ].filter(Boolean).join(' · ');
     return `<a class="card" href="#/s/${enc(b.slug)}">
       <h2>${escapeHtml(b.title)}</h2>
       <p class="mono muted">${escapeHtml(b.slug)}</p>
       ${meta ? `<p>TRA v${escapeHtml(meta.version)} · ${escapeHtml(meta.status)} · ${escapeHtml(meta.date)}</p>` : '<p class="muted">No assessment yet</p>'}
       ${risks.length ? `<p class="badges">${ratingSummary(countBy(risks, 'rating'))}</p>` : ''}
       ${b.questions.length ? `<p>${open} open question${open === 1 ? '' : 's'}${pending ? ` · ${pending} answer${pending === 1 ? '' : 's'} awaiting assessment` : ''}</p>` : ''}
+      ${answerNotes ? `<p class="small">${escapeHtml(answerNotes)}</p>` : ''}
       <p class="muted small">${escapeHtml(kinds)} · updated ${fmtDate(b.mtime)}</p>
     </a>`;
   }).join('');
   render('home', `<div class="page">
     <h1>Subjects</h1>
-    <p class="muted">Documents in <code>scenario/</code> and <code>output/</code>, read-only. Pages refresh when the files change.</p>
+    <p class="muted">Documents in <code>scenario/</code> and <code>output/</code>. Pages refresh when the files change.</p>
     ${subjects.length ? `<div class="cards">${cards}</div>` : '<p>No subjects found. Add a folder under <code>scenario/</code> and run the assessor.</p>'}
   </div>`);
 }
@@ -601,6 +662,7 @@ function subjectHeader(b, active) {
   if (b.questions.length) tabs.push(['questions', 'Questions', `#/s/${enc(b.slug)}/questions`]);
   let summaryShown = false;
   for (const d of b.docs) {
+    if (d.kind === 'submission') continue;  // listed on the Questions page
     if (d.kind === 'summary') {
       if (summaryShown) continue;
       summaryShown = true;
@@ -792,8 +854,13 @@ function viewQuestions(b) {
   const chips = [['', `All ${b.questions.length}`]].concat(
     Q_STATUS.filter(([k]) => counts[k]).map(([k, t]) => [k, `${t} ${counts[k]}`]));
   render(`questions:${b.slug}`, `<div class="page">${subjectHeader(b, 'questions')}
+    <div class="actions">
+      <a class="button primary" href="#/s/${enc(b.slug)}/answer">Answer clarification questions</a>
+      ${b.hasDraft ? '<span class="muted">You have an unsubmitted draft.</span>' : ''}
+    </div>
     <p class="muted">From <a href="${docRoute(b.slug, b.clar.id)}">${escapeHtml(b.clar.name)}</a>
-      (version ${escapeHtml(b.clar.meta.version)}). To answer questions, use <code>/clarify ${escapeHtml(b.slug)}</code> in Claude Code or edit the file.</p>
+      (version ${escapeHtml(b.clar.meta.version)}). You can also answer with <code>/clarify ${escapeHtml(b.slug)}</code> in Claude Code, or by editing the file.</p>
+    ${submissionsHtml(b)}
     <div class="filters">
       ${chips.map(([k, t]) => `<button type="button" class="chip" data-q="${k}" aria-pressed="${ui.qStatus === k}">${escapeHtml(t)}</button>`).join('')}
       <input type="search" id="q-filter" placeholder="Filter questions" aria-label="Filter questions" value="${escapeHtml(ui.qText)}">
@@ -816,7 +883,56 @@ function viewQuestions(b) {
       draw();
     }));
     document.getElementById('q-filter').addEventListener('input', e => { ui.qText = e.target.value; draw(); });
+    app.querySelectorAll('[data-withdraw]').forEach(btn => btn.addEventListener('click', async () => {
+      const file = btn.dataset.withdraw;
+      if (!window.confirm(`Withdraw ${file}? The assessor won't use its answers. The file is kept as a record.`)) return;
+      btn.disabled = true;
+      try {
+        await api('/api/withdraw', { subject: b.slug, file });
+        toast(`Withdrew ${file}`);
+        await refresh();
+      } catch (err) {
+        btn.disabled = false;
+        toast(err.message);
+      }
+    }));
   });
+}
+
+const textHtml = v => v.split('\n').map(inline).join('<br>');
+
+function submissionsHtml(b) {
+  if (!b.submissions.length) return '';
+  const rows = b.submissions.slice().reverse().map(s => {
+    const ids = s.answers.map(a => a.id).join(', ');
+    const dk = s.dontKnow.map(a => a.id).join(', ');
+    return `<tr>
+      <td class="nowrap"><a href="${docRoute(b.slug, s.doc.id)}">${escapeHtml(fmtStamp(s.submitted) || s.doc.name)}</a></td>
+      <td>${escapeHtml(s.answeredBy)}</td>
+      <td>${escapeHtml(ids) || '<span class="muted">none</span>'}${dk ? `<div class="muted small">Don't know: ${escapeHtml(dk)}</div>` : ''}</td>
+      <td><span class="qstatus${s.pending ? ' st-pending' : ''}">${escapeHtml(s.status || 'Unknown')}</span></td>
+      <td>${s.pending ? `<button type="button" data-withdraw="${escapeHtml(s.doc.name)}">Withdraw</button>` : ''}</td></tr>`;
+  }).join('');
+  return `<section class="panel"><h2>Answers submitted from the browser</h2>
+    <div class="table-wrap"><table><thead><tr><th>Submitted</th><th>Answered by</th><th>Answers</th><th>Status</th><th></th></tr></thead>
+    <tbody>${rows}</tbody></table></div>
+    <p class="muted small">The assessor uses pending submissions at the next re-assessment, then marks them as used.</p></section>`;
+}
+
+function priorAnswersHtml(b, q, includeFile) {
+  const out = [];
+  const by = plain(fieldOf(q, 'answered by'));
+  const on = plain(fieldOf(q, 'answered on'));
+  if (includeFile && plain(fieldOf(q, 'answer'))) {
+    out.push(`<div class="prior"><div class="prior-h">Answer in the clarifications file${by ? ` · ${escapeHtml(by)}` : ''}${on ? `, ${escapeHtml(on)}` : ''}</div>
+      <div>${textHtml(fieldOf(q, 'answer'))}</div></div>`);
+  }
+  for (const p of q.pendingAnswers) {
+    out.push(`<div class="prior pending"><div class="prior-h">Pending answer · ${escapeHtml(p.sub.answeredBy)}, ${escapeHtml(fmtStamp(p.sub.submitted))}
+      (<a href="${docRoute(b.slug, p.sub.doc.id, `def-${q.id}`)}">${escapeHtml(p.sub.doc.name)}</a>)</div>
+      <div>${textHtml(p.answer)}</div></div>`);
+  }
+  return out.length ? `<div class="priors">${out.join('')}</div>` : '';
 }
 
 function questionHtml(b, q) {
@@ -826,8 +942,377 @@ function questionHtml(b, q) {
     <header><a class="qid" href="${docRoute(b.slug, b.clar.id, `def-${q.id}`)}">${q.id}</a>
       <h2>${escapeHtml(q.title)}</h2><span class="qstatus">${escapeHtml(label)}</span></header>
     ${q.statusText ? `<p class="muted small">Status: ${escapeHtml(q.statusText)}</p>` : ''}
-    <dl>${fields.map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${v.trim() ? v.split('\n').map(inline).join('<br>') : '<span class="muted">—</span>'}</dd>`).join('')}</dl>
+    <dl>${fields.map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${v.trim() ? textHtml(v) : '<span class="muted">—</span>'}</dd>`).join('')}</dl>
+    ${priorAnswersHtml(b, q, false)}
   </article>`;
+}
+
+// ---------------------------------------------------------- answering
+
+const TOKEN = (document.querySelector('meta[name="ab-token"]') || {}).content || '';
+const CARD_RE = /(?<!\d)(?:\d[ -]?){12,18}\d(?!\d)/g;
+const SECRET_WORD_RE = /\b(password|passwd|pwd|passphrase|secret|api[ _-]?key|access[ _-]?key|token)\s*(is|=|:)\s*\S+|-----BEGIN [A-Z ]*PRIVATE KEY-----/i;
+const LONG_TOKEN_RE = /(?=[\w+/=-]*\d)(?=[\w+/=-]*[a-z])(?=[\w+/=-]*[A-Z])[\w+/=-]{24,}/;
+
+async function api(path, body, opts = {}) {
+  const r = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-AB-Token': TOKEN },
+    body: JSON.stringify(body),
+    keepalive: !!opts.keepalive,
+  });
+  let data = {};
+  try { data = await r.json(); } catch { /* not JSON */ }
+  if (!r.ok) throw new Error(data.error || `Request failed (${r.status})`);
+  return data;
+}
+
+async function refresh() {
+  state.index = await fetchIndex();
+  state.sig = indexSig(state.index);
+  await route({ keepScroll: true });
+}
+
+function hasCardNumber(text) {
+  for (const m of String(text).matchAll(CARD_RE)) {
+    const d = m[0].replace(/\D/g, '');
+    if (d.length < 13 || d.length > 19) continue;
+    let sum = 0;
+    for (let i = 0; i < d.length; i++) {
+      let n = +d[d.length - 1 - i];
+      if (i % 2) { n *= 2; if (n > 9) n -= 9; }
+      sum += n;
+    }
+    if (sum % 10 === 0) return true;
+  }
+  return false;
+}
+
+const looksSecret = text => SECRET_WORD_RE.test(text) || LONG_TOKEN_RE.test(text);
+
+function answerWarning(text) {
+  if (hasCardNumber(text)) {
+    return { error: true, msg: 'This looks like a full card number. Remove it: an answer with a card number can\'t be saved or submitted.' };
+  }
+  if (looksSecret(text)) {
+    return { error: false, msg: 'This may contain a password, key or token. Record only that it exists, for example "the API key is kept in a .env file".' };
+  }
+  return null;
+}
+
+const questionText = q => plain(fieldOf(q, 'question'));
+// What an answer was given against: the question's status and text.
+const questionKey = q => `${q.fileStatus}|${questionText(q)}`;
+const isAnswerable = q => q.fileStatus === 'open' || q.fileStatus === 'partial';
+
+function changeReason(q) {
+  if (q.fileStatus === 'missing') return 'This question is no longer in the clarifications file.';
+  if (!isAnswerable(q)) return `This question is now ${q.statusText || 'closed'}.`;
+  return 'The question has changed since you answered it.';
+}
+
+function emptySession() {
+  return { answeredBy: '', clarVersion: '', answers: {}, savedAt: '', saveState: '', error: '', noSave: false, chain: Promise.resolve() };
+}
+
+async function loadSession(b) {
+  if (state.sessions.has(b.slug)) return state.sessions.get(b.slug);
+  const s = emptySession();
+  try {
+    const r = await fetch(`/api/draft?subject=${enc(b.slug)}`, { cache: 'no-store' });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || `Couldn't load the draft (${r.status})`);
+    if (data.draft) {
+      Object.assign(s, {
+        answeredBy: data.draft.answeredBy || '',
+        clarVersion: data.draft.clarVersion || '',
+        answers: data.draft.answers || {},
+        savedAt: data.draft.savedAt || '',
+        saveState: 'saved',
+      });
+    }
+  } catch (err) {
+    s.error = `${err.message} Saving is turned off so the draft isn't overwritten.`;
+    s.noSave = true;
+  }
+  state.sessions.set(b.slug, s);
+  return s;
+}
+
+function draftPayload(s) {
+  const answers = {};
+  for (const [id, a] of Object.entries(s.answers)) {
+    // Never write what looks like a card number to disk, even in a draft.
+    answers[id] = { state: a.state, text: a.state === 'answer' && !hasCardNumber(a.text) ? a.text : '', q: a.q || '' };
+  }
+  if (!s.answeredBy.trim() && !Object.keys(answers).length) return null;
+  return { answeredBy: s.answeredBy, clarVersion: s.clarVersion, answers };
+}
+
+function saveSoon(b, s) {
+  clearTimeout(s.timer);
+  s.saveState = 'unsaved';
+  showSaveState(s);
+  s.timer = setTimeout(() => saveNow(b, s), 800);
+}
+
+function saveNow(b, s, keepalive) {
+  clearTimeout(s.timer);
+  if (s.noSave || s.saveState !== 'unsaved') return s.chain;
+  s.saveState = 'saving';
+  showSaveState(s);
+  // One save at a time, in order, so an older save can't land after a newer one.
+  s.chain = s.chain.then(async () => {
+    try {
+      const r = await api('/api/draft', { subject: b.slug, draft: draftPayload(s) }, { keepalive });
+      s.savedAt = r.savedAt || '';
+      if (s.saveState === 'saving') s.saveState = 'saved';
+      s.error = '';
+    } catch (err) {
+      s.saveState = 'error';
+      s.error = err.message;
+    }
+    showSaveState(s);
+  });
+  return s.chain;
+}
+
+function showSaveState(s) {
+  const el = document.getElementById('save-status');
+  if (!el) return;
+  el.classList.toggle('error', s.saveState === 'error');
+  el.textContent = {
+    unsaved: 'Unsaved changes',
+    saving: 'Saving…',
+    saved: s.savedAt ? `Draft saved ${fmtStamp(s.savedAt).slice(11)}` : 'Nothing to save',
+    error: `Not saved: ${s.error}`,
+  }[s.saveState] || (s.noSave ? 'Saving is off' : 'No draft yet');
+}
+
+function flushSave() {
+  if (!state.view.startsWith('answer:')) return;
+  const slug = state.view.slice('answer:'.length);
+  const s = state.sessions.get(slug);
+  const b = state.subjects.get(slug);
+  if (s && b && s.saveState === 'unsaved') saveNow(b, s, true);
+}
+
+function answerQuestions(b, s) {
+  const list = b.questions.filter(isAnswerable);
+  for (const id of Object.keys(s.answers)) {
+    if (list.some(q => q.id === id)) continue;
+    list.push(b.questions.find(q => q.id === id) ||
+      { id, title: '(no longer in the clarifications file)', fields: [], fileStatus: 'missing', statusText: '', pendingAnswers: [] });
+  }
+  return list;
+}
+
+function changedQuestions(b, s) {
+  return answerQuestions(b, s).filter(q => s.answers[q.id] && s.answers[q.id].q && s.answers[q.id].q !== questionKey(q));
+}
+
+function answerCardHtml(b, s, q) {
+  const a = s.answers[q.id] || { state: 'skip', text: '' };
+  const changed = a.q && a.q !== questionKey(q);
+  const status = q.fileStatus === 'open' ? 'Open' : q.fileStatus === 'partial' ? 'Answered in part' : q.statusText || 'Not in file';
+  const warn = a.state === 'answer' ? answerWarning(a.text) : null;
+  const pressed = st => `aria-pressed="${a.state === st}"`;
+  return `<article class="q answer-card${changed ? ' changed' : ''}" id="ans-${q.id}" data-q="${q.id}">
+    <header>${b.ids.has(q.id) ? `<a class="qid" href="${docRoute(b.slug, b.clar.id, `def-${q.id}`)}">${q.id}</a>` : `<span class="qid">${q.id}</span>`}
+      <h2>${escapeHtml(q.title)}</h2><span class="qstatus">${escapeHtml(status)}</span></header>
+    ${changed ? `<p class="flag">${escapeHtml(changeReason(q))}</p>` : ''}
+    <dl>
+      <dt>Question</dt><dd>${fieldOf(q, 'question') ? textHtml(fieldOf(q, 'question')) : '<span class="muted">—</span>'}</dd>
+      ${fieldOf(q, 'why it matters') ? `<dt>Why it matters</dt><dd>${textHtml(fieldOf(q, 'why it matters'))}</dd>` : ''}
+    </dl>
+    ${priorAnswersHtml(b, q, true)}
+    <div class="seg choice" role="group" aria-label="Your answer to ${q.id}">
+      <button type="button" data-state="answer" ${pressed('answer')}>Answer</button>
+      <button type="button" data-state="dontknow" ${pressed('dontknow')}>Don't know</button>
+      <button type="button" data-state="skip" ${pressed('skip')}>Skip</button>
+    </div>
+    <label class="sr" for="t-${q.id}">Your answer to ${q.id}</label>
+    <textarea id="t-${q.id}" data-text rows="4" maxlength="10000"${a.state === 'answer' ? '' : ' hidden'}>${escapeHtml(a.text)}</textarea>
+    <p class="warn${warn && warn.error ? ' error' : ''}" data-warn${warn ? '' : ' hidden'}>${warn ? escapeHtml(warn.msg) : ''}</p>
+  </article>`;
+}
+
+function progressText(b, s) {
+  const qs = answerQuestions(b, s);
+  const n = st => qs.filter(q => s.answers[q.id] && s.answers[q.id].state === st).length;
+  const skipped = qs.length - n('answer') - n('dontknow');
+  return `${n('answer')} answered · ${n('dontknow')} don't know · ${skipped} skipped, of ${qs.length}`;
+}
+
+function reviewHtml(b, s) {
+  const groups = { answered: [], dontknow: [], blank: [], skipped: [], cards: [], secrets: [] };
+  for (const q of answerQuestions(b, s)) {
+    const a = s.answers[q.id];
+    if (!a) groups.skipped.push(q.id);
+    else if (a.state === 'dontknow') groups.dontknow.push(q.id);
+    else if (!a.text.trim()) groups.blank.push(q.id);
+    else {
+      groups.answered.push(q.id);
+      if (hasCardNumber(a.text)) groups.cards.push(q.id);
+      else if (looksSecret(a.text)) groups.secrets.push(q.id);
+    }
+  }
+  const changed = changedQuestions(b, s).map(q => q.id);
+  const ids = list => list.map(id => `<button type="button" class="linkish" data-goto="${id}">${id}</button>`).join(', ');
+  const problems = [];
+  if (!s.answeredBy.trim()) problems.push('Enter who is answering.');
+  if (!groups.answered.length && !groups.dontknow.length) problems.push('There is nothing to submit yet.');
+  if (groups.cards.length) problems.push(`Remove the card numbers from ${ids(groups.cards)}.`);
+  if (changed.length) problems.push(`Review the questions that changed: ${ids(changed)}.`);
+  const line = (label, list, note) => `<tr><th>${label}</th><td>${list.length}</td><td>${list.length ? ids(list) : '<span class="muted">none</span>'}${note && list.length ? `<div class="muted small">${note}</div>` : ''}</td></tr>`;
+  return `<section class="panel review">
+    <h2>Review and submit</h2>
+    <p>Answered by <strong>${escapeHtml(s.answeredBy.trim() || '—')}</strong>, against ${escapeHtml(b.clar.name)} version ${escapeHtml(s.clarVersion || b.clar.meta.version)}.</p>
+    <div class="table-wrap"><table>
+      ${line('Answered', groups.answered)}
+      ${line('Don\'t know', groups.dontknow, 'Listed in the submission without an answer, so the assessor can suggest someone else to ask.')}
+      ${line('Skipped', groups.skipped.concat(groups.blank), groups.blank.length ? `Marked Answer but left empty: ${groups.blank.join(', ')}.` : '')}
+    </table></div>
+    ${groups.secrets.length ? `<p class="warn">These answers may contain a password, key or token: ${ids(groups.secrets)}. Check them before submitting.</p>` : ''}
+    ${problems.length ? `<ul class="problems">${problems.map(p => `<li>${p}</li>`).join('')}</ul>` : ''}
+    <p class="muted small">Submitting writes a new file in <code>output/${escapeHtml(b.slug)}/answers/</code> and clears this draft. The assessor uses the answers at the next re-assessment.</p>
+    <div class="actions">
+      <button type="button" class="primary" data-submit${problems.length ? ' disabled' : ''}>Submit answers</button>
+      <button type="button" data-back>Back to answering</button>
+    </div>
+  </section>`;
+}
+
+async function viewAnswer(b) {
+  setCrumbs([[b.slug, `#/s/${enc(b.slug)}`], ['Questions', `#/s/${enc(b.slug)}/questions`], ['Answer']]);
+  const s = await loadSession(b);
+  const changed = changedQuestions(b, s);
+  // Nothing the session answered has changed, so it now stands against the current version.
+  if (!changed.length && Object.keys(s.answers).length) s.clarVersion = b.clar.meta.version;
+  const reviewing = state.reviewing.has(b.slug);
+  const qs = answerQuestions(b, s);
+  render(`answer:${b.slug}`, `<div class="page">${subjectHeader(b, 'questions')}
+    <h2 class="page-h">Answer clarification questions</h2>
+    <p class="muted">Questions that are Open or Answered in part, from <a href="${docRoute(b.slug, b.clar.id)}">${escapeHtml(b.clar.name)}</a>
+      (version ${escapeHtml(b.clar.meta.version)}), most important first. Your answers are saved as a draft while you type, so you can stop and come back later.
+      When you submit, the assessor uses them at the next re-assessment. Answer as specifically as you can, and don't include passwords, keys or full card numbers.</p>
+    ${s.error && s.noSave ? `<p class="error">${escapeHtml(s.error)}</p>` : ''}
+    <div class="panel who">
+      <label for="who"><strong>Who is answering?</strong> <span class="muted">Your name or role, such as System owner. It is recorded with every answer.</span></label>
+      <input id="who" type="text" maxlength="300" autocomplete="name" value="${escapeHtml(s.answeredBy)}">
+    </div>
+    ${changed.length ? `<div class="note warn-note">
+      <p><strong>The clarifications file has changed</strong> since you answered ${changed.map(q => q.id).join(', ')}. Check those questions, then mark them as reviewed.</p>
+      <button type="button" data-reviewed>Mark as reviewed</button></div>` : ''}
+    <div class="answer-bar">
+      <span id="progress">${escapeHtml(progressText(b, s))}</span>
+      <span id="save-status" class="muted small"></span>
+      <span class="spacer"></span>
+      <button type="button" id="save">Save</button>
+      <button type="button" class="primary" id="review"${reviewing ? ' hidden' : ''}>Review and submit</button>
+    </div>
+    <div id="review-panel">${reviewing ? reviewHtml(b, s) : ''}</div>
+    <div id="alist"${reviewing ? ' hidden' : ''}>${qs.length ? qs.map(q => answerCardHtml(b, s, q)).join('') : '<p class="muted">There are no Open questions.</p>'}</div>
+  </div>`, b, () => {
+    bindSearch(b);
+    showSaveState(s);
+    const touch = () => { if (!s.clarVersion) s.clarVersion = b.clar.meta.version; saveSoon(b, s); };
+    const progress = () => { document.getElementById('progress').textContent = progressText(b, s); };
+    document.getElementById('who').addEventListener('input', e => { s.answeredBy = e.target.value; touch(); });
+    document.getElementById('save').addEventListener('click', () => { s.saveState = 'unsaved'; saveNow(b, s); });
+    const list = document.getElementById('alist');
+    list.addEventListener('click', e => {
+      const btn = e.target.closest('[data-state]');
+      if (!btn) return;
+      const card = btn.closest('[data-q]');
+      const q = qs.find(x => x.id === card.dataset.q);
+      const st = btn.dataset.state;
+      const prev = s.answers[q.id];
+      if (st === 'skip') delete s.answers[q.id];
+      else s.answers[q.id] = { state: st, text: prev ? prev.text : '', q: prev && prev.q ? prev.q : questionKey(q) };
+      card.querySelectorAll('[data-state]').forEach(x => x.setAttribute('aria-pressed', x === btn));
+      const ta = card.querySelector('[data-text]');
+      ta.hidden = st !== 'answer';
+      if (st === 'answer') ta.focus();
+      showWarning(card, st === 'answer' ? ta.value : '');
+      progress();
+      touch();
+    });
+    list.addEventListener('input', e => {
+      if (!e.target.matches('[data-text]')) return;
+      const card = e.target.closest('[data-q]');
+      const a = s.answers[card.dataset.q];
+      if (!a) return;
+      a.text = e.target.value;
+      showWarning(card, a.text);
+      touch();
+    });
+    const reviewed = app.querySelector('[data-reviewed]');
+    if (reviewed) {
+      reviewed.addEventListener('click', () => {
+        for (const q of answerQuestions(b, s)) if (s.answers[q.id]) s.answers[q.id].q = questionKey(q);
+        s.clarVersion = b.clar.meta.version;
+        touch();
+        viewAnswer(b);
+      });
+    }
+    document.getElementById('review').addEventListener('click', () => {
+      state.reviewing.add(b.slug);
+      viewAnswer(b);
+    });
+    const panel = document.getElementById('review-panel');
+    panel.addEventListener('click', async e => {
+      const goto = e.target.closest('[data-goto]');
+      if (goto || e.target.closest('[data-back]')) {
+        state.reviewing.delete(b.slug);
+        await viewAnswer(b);
+        if (goto) scrollToAnchor(`ans-${goto.dataset.goto}`);
+        return;
+      }
+      const submitBtn = e.target.closest('[data-submit]');
+      if (!submitBtn) return;
+      submitBtn.disabled = true;
+      try {
+        const file = await submitSession(b, s);
+        state.sessions.set(b.slug, emptySession());
+        state.reviewing.delete(b.slug);
+        toast(`Submitted as ${file}`);
+        location.hash = `#/s/${enc(b.slug)}/questions`;
+        await refresh();
+      } catch (err) {
+        submitBtn.disabled = false;
+        toast(err.message);
+      }
+    });
+  });
+}
+
+function showWarning(card, text) {
+  const el = card.querySelector('[data-warn]');
+  const w = text ? answerWarning(text) : null;
+  el.hidden = !w;
+  el.classList.toggle('error', !!(w && w.error));
+  el.textContent = w ? w.msg : '';
+}
+
+async function submitSession(b, s) {
+  const payload = {
+    subject: b.slug,
+    answeredBy: s.answeredBy.trim(),
+    clarVersion: s.clarVersion || b.clar.meta.version,
+    answers: [],
+    dontKnow: [],
+  };
+  for (const q of answerQuestions(b, s)) {
+    const a = s.answers[q.id];
+    if (!a) continue;
+    if (a.state === 'dontknow') payload.dontKnow.push({ id: q.id, title: q.title });
+    else if (a.text.trim()) payload.answers.push({ id: q.id, title: q.title, question: questionText(q), answer: a.text });
+  }
+  clearTimeout(s.timer);
+  await s.chain;  // let a save in progress finish, so it can't recreate the draft afterwards
+  const r = await api('/api/submit', payload);
+  return r.file;
 }
 
 function docHead(b, d, mode) {
@@ -1098,6 +1583,7 @@ async function route(opts = {}) {
       const sub = parts[2] || '';
       if (!sub) return viewOverview(b);
       if (sub === 'questions' && b.clar) return viewQuestions(b);
+      if (sub === 'answer' && b.clar) return await viewAnswer(b);
       if (sub === 'search') return viewSearch(b, params.get('q') || '');
       const d = b.docs.find(x => x.id === parts[3]);
       if (d && sub === 'doc') return viewDoc(b, d, params.get('a'), opts);
@@ -1126,8 +1612,8 @@ async function poll() {
     live.textContent = 'Live';
     const sig = indexSig(idx);
     if (sig === state.sig) return;
-    // Don't re-render under someone typing in a filter; the next poll retries.
-    if (document.activeElement && document.activeElement.matches('input')) return;
+    // Don't re-render under someone typing; the next poll retries.
+    if (document.activeElement && document.activeElement.matches('input, textarea')) return;
     const before = new Map((state.index ? state.index.subjects : []).flatMap(s => s.docs.map(d => [d.path, d.mtime])));
     const changed = idx.subjects.flatMap(s => s.docs).filter(d => before.get(d.path) !== d.mtime).map(d => d.name);
     state.index = idx;
@@ -1158,6 +1644,7 @@ document.getElementById('theme').addEventListener('click', () => {
   try { localStorage.setItem('ab-theme', theme); } catch { /* storage unavailable */ }
 });
 
-window.addEventListener('hashchange', () => route());
+window.addEventListener('hashchange', () => { flushSave(); route(); });
+window.addEventListener('pagehide', flushSave);
 route();
 setInterval(poll, 4000);

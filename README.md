@@ -53,7 +53,7 @@ To read the results, the [assessment browser](#browsing-the-assessments) shows e
 │       ├── summarizer.md                    # spec for the summarizer agent
 │       └── assessment-browser/features.md   # spec for the assessment browser
 ├── tools/assessment-browser/
-│   ├── serve.py                             # assessment browser: local, read-only web server
+│   ├── serve.py                             # assessment browser: local web server
 │   └── static/                              # the browser app (HTML, JavaScript, CSS)
 ├── scenario/<subject>/                      # input: one folder per subject   (not in git)
 │   └── description.md
@@ -62,7 +62,10 @@ To read the results, the [assessment browser](#browsing-the-assessments) shows e
     ├── clarifications-needed-<subject>.md
     ├── security-design-<subject>.md
     ├── security-controls-<subject>.md
-    └── system-summary-<subject>-v<version>.md
+    ├── system-summary-<subject>-v<version>.md
+    └── answers/                             # answers given in the assessment browser
+        ├── draft.md                         #   the answers being written, not yet submitted
+        └── answers-<YYYYMMDD-HHMMSS>.md     #   one file per submission
 ```
 
 `scenario/` and `output/` are listed in `.gitignore`. They can contain sensitive details about real systems, so they stay out of version control. Back them up separately if you need to.
@@ -402,6 +405,20 @@ If an answer contradicts an earlier answer or a fact in the TRA, Claude quotes b
 
 The assessor takes answers at face value. If an answer would lower a rating and it overturns what someone else said, such as the System owner, have that person confirm it, or supply evidence like a configuration export or a log sample, before you re-assess. The interview never changes a question's status, never re-assesses, and never records secrets such as passwords or full card numbers. It is a skill rather than an agent because it needs to ask you questions as it goes, and agents run in the background.
 
+If someone has answered a question in the assessment browser and the answer is still pending, the interview shows that answer and asks whether to keep it (the question is skipped), add to it, or correct it. To check pending answers without answering anything, run `/clarify <subject> --review-submissions`. It reports contradictions, possible secrets and answers too vague to change a rating, and writes nothing.
+
+### In the assessment browser
+
+For people who don't use Claude Code. Start the [assessment browser](#browsing-the-assessments), open the subject's **Questions** tab and choose **Answer clarification questions**.
+
+- Enter who is answering (name or role). It is recorded with every answer.
+- For each Open or Answered in part question, write an answer, choose **Don't know**, or **Skip** it. Answers already given, in the clarifications file or in a pending submission, are shown so you don't answer twice.
+- Your answers are saved as a draft while you type (`output/<subject>/answers/draft.md`), so you can close the browser and continue later.
+- **Review and submit** shows what you answered, marked "Don't know" and skipped, then writes a new file, `output/<subject>/answers/answers-<YYYYMMDD-HHMMSS>.md`, and clears the draft. An earlier submission is never overwritten.
+- A submission stays **Pending** until the next re-assessment. The assessor then copies its answers into the clarifications file, with who answered and when, and marks it **Used in TRA version X.Y**. Until then you can **Withdraw** it from the Questions tab; the file is kept as a record.
+
+The browser doesn't change the clarifications file or any other assessment document. It won't save or submit an answer that looks like a full card number, and it warns about anything that looks like a password, key or token. It can't check answers for contradictions, because it uses no agent; the assessor does that when it uses them, and `/clarify --review-submissions` can do it sooner. If the clarifications file changes while you're answering, for example after a re-assessment, the browser shows which of your questions changed and asks you to review them before you submit.
+
 ### By editing the file
 
 Each question in `clarifications-needed-<slug>.md` looks like this:
@@ -441,13 +458,13 @@ What it shows:
 
 - **Subjects:** every folder under `scenario/` or `output/`, with the TRA version, risk counts and open questions.
 - **Overview** for a subject: risk counts before and after treatment, a risk matrix (current or after treatment), a risk register you can sort and filter, and the list of documents. The matrix uses the bands from the TRA's own §3.4 risk matrix.
-- **Questions:** the clarification questions, filtered by status. *Answered, not yet assessed* means the question has an answer but its status is still Open, so the answer is waiting for a re-assessment.
+- **Questions:** the clarification questions, filtered by status. *Answered, not yet assessed* means the question has an answer, in the file or in a pending submission, that no re-assessment has used yet. From here you can also [answer the questions](#in-the-assessment-browser), and see and withdraw submissions.
 - **Documents:** each document rendered, with a table of contents. Every ID (R-, A-, T-, V-, C-, AS-, E-, Q-, SC-, DP-, F-, DD-, SE-) links to where it's defined, in whichever document defines it, and shows the definition when you hover over it. File references such as `clarifications-needed-<subject>.md:52` open the source at that line. *Source* shows the Markdown with line numbers.
 - **Search** across all of a subject's documents.
 
 The page reloads documents when they change on disk, so you can leave it open while an agent works.
 
-The server is read-only and listens on 127.0.0.1 only, so other machines can't reach it. It serves only the `.md` files under `scenario/` and `output/`. The pages load nothing from the Internet.
+The server listens on 127.0.0.1 only, so other machines can't reach it. It serves only the `.md` files under `scenario/` and `output/`, and the pages load nothing from the Internet. The only files it writes are answer drafts and submissions in `output/<subject>/answers/`. It accepts those writes only from its own page, so another website open in the same browser can't send answers. If you restart the server, reload the page before saving.
 
 ### What it relies on
 
