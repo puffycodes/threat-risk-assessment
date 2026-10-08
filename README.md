@@ -82,6 +82,7 @@ To read the results, the [assessment browser](#browsing-the-assessments) shows e
    │     assessor     │────► (questions for a human)
    └──────────────────┘                 │
             │                           │ /clarify interview
+            │                           │ or assessment browser
             │                           │ (or edit the file)
             ▼                           ▼
  threat-risk-assessment-<subject>.md ◄── re-assessment (assessor again)
@@ -112,7 +113,7 @@ To read the results, the [assessment browser](#browsing-the-assessments) shows e
 
 1. **Describe the subject** in `scenario/<subject>/description.md`.
 2. **Run the assessor.** It writes the TRA and a clarifications file.
-3. **Answer questions** with `/clarify <subject>`, or by editing the clarifications file.
+3. **Answer questions** with `/clarify <subject>`, in the [assessment browser](#in-the-assessment-browser), or by editing the clarifications file.
 4. **Run the assessor again.** It re-assesses using your answers, re-scores the risks, and adds follow-up questions.
 5. **Repeat steps 3–4** until the questions that drive the ratings are answered.
 6. **Run the designer** to produce the security design and the control list.
@@ -183,7 +184,7 @@ This produces `output/public-web-server/threat-risk-assessment-public-web-server
 /clarify public-web-server
 ```
 
-Claude interviews you, most important questions first, and saves your answers with who answered and when. You can also edit the file by hand (see [Answering clarification questions](#answering-clarification-questions)).
+Claude interviews you, most important questions first, and saves your answers with who answered and when. People who don't use Claude Code can answer in the assessment browser instead, and you can also edit the file by hand (see [Answering clarification questions](#answering-clarification-questions)).
 
 **4. Re-assess.**
 
@@ -224,6 +225,7 @@ Open the subject to see the risk matrix and register, then go through the TRA, d
 | Subject | Required: a scenario folder or file, a codebase, architecture docs, or notes in the request |
 | Output | `output/<slug>/threat-risk-assessment-<slug>.md` |
 | Clarifications | `output/<slug>/clarifications-needed-<slug>.md` |
+| Answer submissions | `output/<slug>/answers/answers-*.md`, from the assessment browser (read if any exist) |
 
 `<slug>` is a short kebab-case name for the subject, such as `public-web-server`. Name the scenario folder with the slug you want, because the output folder name follows it.
 
@@ -256,8 +258,9 @@ Open the subject to see the risk matrix and register, then go through the TRA, d
 
 ### Re-assessment
 
-Ask for a re-assessment whenever the scenario or the clarification answers change. The assessor reads the existing TRA and clarifications file and works out what is new. It then:
+Ask for a re-assessment whenever the scenario or the clarification answers change, including when answers are submitted in the assessment browser. The assessor reads the existing TRA and clarifications file and works out what is new. It then:
 
+- copies the answers from pending browser submissions into the clarifications file, oldest first, with who answered and when, and marks each submission `Used in TRA version X.Y` (see below)
 - records each new answer in Appendix B with an E- ID, quoting it with who answered and when
 - updates the affected sections and re-scores the affected risks
 - explains every rating change in the §8 rating history and in a "What changed" line in the executive summary
@@ -268,6 +271,8 @@ Ask for a re-assessment whenever the scenario or the clarification answers chang
 You can also ask for a re-assessment to fix gaps the designer reports, with no new answers. The assessor checks each gap against the TRA, fixes the ones that hold, and says why for any it leaves.
 
 A re-assessment can raise ratings as well as lower them: an answer can reveal a new weakness, or even a new risk.
+
+**Browser submissions.** The assessor uses only submissions whose Status is `Pending`; it ignores the draft and withdrawn submissions. Each answer goes under its question, followed by "(from answers-<…>.md)". If the question already has an answer, the new one is added below it as a **Further answer**, so nothing is replaced. Answers to questions that have since closed are still copied, as new evidence. If `/clarify` recorded a correction to a submitted answer, the submitted answer is still copied as a record, but the correction is the one used as evidence. The assessor changes only the submission's Status row, never its answers.
 
 ---
 
