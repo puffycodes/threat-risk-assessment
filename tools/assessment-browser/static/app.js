@@ -1030,7 +1030,7 @@ function changeReason(q) {
 }
 
 function emptySession() {
-  return { answeredBy: '', clarVersion: '', answers: {}, savedAt: '', saveState: '', error: '', noSave: false, chain: Promise.resolve() };
+  return { answeredBy: '', clarVersion: '', answers: {}, savedAt: '', checkpointAt: '', saveState: '', error: '', noSave: false, chain: Promise.resolve() };
 }
 
 async function loadSession(b) {
@@ -1040,6 +1040,7 @@ async function loadSession(b) {
     const r = await fetch(`/api/draft?subject=${enc(b.slug)}`, { cache: 'no-store' });
     const data = await r.json();
     if (!r.ok) throw new Error(data.error || `Couldn't load the draft (${r.status})`);
+    s.checkpointAt = data.checkpointAt || '';
     if (data.draft) {
       Object.assign(s, {
         answeredBy: data.draft.answeredBy || '',
@@ -1074,16 +1075,18 @@ function saveSoon(b, s) {
   s.timer = setTimeout(() => saveNow(b, s), 800);
 }
 
-function saveNow(b, s, keepalive) {
+// checkpoint: a Save click, which also sets the version Cancel goes back to.
+function saveNow(b, s, keepalive, checkpoint) {
   clearTimeout(s.timer);
-  if (s.noSave || s.saveState !== 'unsaved') return s.chain;
+  if (s.noSave || (s.saveState !== 'unsaved' && !checkpoint)) return s.chain;
   s.saveState = 'saving';
   showSaveState(s);
   // One save at a time, in order, so an older save can't land after a newer one.
   s.chain = s.chain.then(async () => {
     try {
-      const r = await api('/api/draft', { subject: b.slug, draft: draftPayload(s) }, { keepalive });
+      const r = await api('/api/draft', { subject: b.slug, draft: draftPayload(s), checkpoint: !!checkpoint }, { keepalive });
       s.savedAt = r.savedAt || '';
+      if (checkpoint) s.checkpointAt = r.checkpointAt || '';
       if (s.saveState === 'saving') s.saveState = 'saved';
       s.error = '';
     } catch (err) {
@@ -1226,7 +1229,8 @@ async function viewAnswer(b) {
       <span id="progress">${escapeHtml(progressText(b, s))}</span>
       <span id="save-status" class="muted small"></span>
       <span class="spacer"></span>
-      <button type="button" id="save">Save</button>
+      <button type="button" id="save" title="Save, and make this the version Cancel goes back to">Save</button>
+      <button type="button" id="cancel"${s.noSave ? ' disabled' : ''} title="Forget the changes since you last clicked Save">Cancel</button>
       <button type="button" class="primary" id="review"${reviewing ? ' hidden' : ''}>Review and submit</button>
     </div>
     <div id="review-panel">${reviewing ? reviewHtml(b, s) : ''}</div>
@@ -1237,7 +1241,8 @@ async function viewAnswer(b) {
     const touch = () => { if (!s.clarVersion) s.clarVersion = b.clar.meta.version; saveSoon(b, s); };
     const progress = () => { document.getElementById('progress').textContent = progressText(b, s); };
     document.getElementById('who').addEventListener('input', e => { s.answeredBy = e.target.value; touch(); });
-    document.getElementById('save').addEventListener('click', () => { s.saveState = 'unsaved'; saveNow(b, s); });
+    document.getElementById('save').addEventListener('click', () => { s.saveState = 'unsaved'; saveNow(b, s, false, true); });
+    document.getElementById('cancel').addEventListener('click', () => cancelSession(b, s));
     const list = document.getElementById('alist');
     list.addEventListener('click', e => {
       const btn = e.target.closest('[data-state]');
@@ -1303,6 +1308,40 @@ async function viewAnswer(b) {
       }
     });
   });
+}
+
+// Forget the changes since the last Save click, after the user confirms. The
+// draft goes back to that save, or is removed if Save was never clicked.
+async function cancelSession(b, s) {
+  const msg = s.checkpointAt
+    ? `Forget the changes since you last clicked Save (${fmtStamp(s.checkpointAt)})? Your answers go back to that save.`
+    : "You haven't clicked Save, so this clears who is answering and all your answers in this draft. Continue?";
+  if (!window.confirm(msg)) return;
+  clearTimeout(s.timer);
+  s.saveState = '';
+  await s.chain;  // let a save in progress finish, so it can't land after the cancel
+  try {
+    const r = await api('/api/cancel', { subject: b.slug });
+    const fresh = emptySession();
+    fresh.checkpointAt = r.checkpointAt || '';
+    if (r.draft) {
+      Object.assign(fresh, {
+        answeredBy: r.draft.answeredBy || '',
+        clarVersion: r.draft.clarVersion || '',
+        answers: r.draft.answers || {},
+        savedAt: r.draft.savedAt || '',
+        saveState: 'saved',
+      });
+    }
+    state.sessions.set(b.slug, fresh);
+    state.reviewing.delete(b.slug);
+    toast(r.draft ? 'Changes since your last save were forgotten.' : 'The draft was cleared.');
+    await refresh();
+  } catch (err) {
+    s.saveState = 'unsaved';
+    showSaveState(s);
+    toast(err.message);
+  }
 }
 
 function showWarning(card, text) {

@@ -244,14 +244,20 @@ def now_local():
     return datetime.datetime.now().astimezone().replace(microsecond=0)
 
 
-def read_draft(slug):
-    path = subject_dir(slug) / ANSWERS_DIR / DRAFT_NAME
+def load_draft_file(path):
+    """The draft file's contents, with "checkpoint" (the session as it was at the
+    last Save click, or None), or None if there is no draft."""
     if not path.is_file():
         return None
     m = re.search(r"```json\n(.*)\n```\s*$", path.read_text(encoding="utf-8").replace("\r\n", "\n"), re.S)
     if not m:
         raise RequestError(500, f"The draft in {path.relative_to(ROOT).as_posix()} can't be read.")
-    return json.loads(m.group(1))
+    data = json.loads(m.group(1))
+    if "checkpoint" not in data:
+        # A draft written before checkpoints existed: treat all of it as saved.
+        data["checkpoint"] = dict(data)
+    return data
+
 
 
 def clean_draft(draft):
@@ -280,23 +286,62 @@ def clean_draft(draft):
     }
 
 
-def save_draft(slug, draft):
-    d = subject_dir(slug) / ANSWERS_DIR
-    path = d / DRAFT_NAME
+def read_draft(slug):
+    """The current draft for the page, and when its checkpoint was taken."""
+    data = load_draft_file(subject_dir(slug) / ANSWERS_DIR / DRAFT_NAME)
+    if data is None:
+        return None, None
+    cp = data.pop("checkpoint")
+    return data, (cp or {}).get("savedAt")
+
+
+def write_draft_file(slug, path, draft, checkpoint):
+    path.parent.mkdir(exist_ok=True)
+    text = (
+        f"# Draft answers: {slug}\n\n"
+        "Not submitted. The assessment browser saves this draft while you answer clarification "
+        "questions; submit it there. The assessor and /clarify ignore this file. \"checkpoint\" is "
+        "the draft as it was when Save was last clicked; Cancel goes back to it.\n\n"
+        "```json\n" + json.dumps({**draft, "checkpoint": checkpoint}, indent=2, ensure_ascii=False) + "\n```\n"
+    )
+    write_atomic(path, text)
+
+
+EMPTY_DRAFT = {"answeredBy": "", "clarVersion": "", "answers": {}}
+
+
+def save_draft(slug, draft, checkpoint=False):
+    """Save the draft. With checkpoint (a Save click), also make it the version
+    Cancel goes back to; otherwise (an automatic save) keep the old checkpoint."""
+    path = subject_dir(slug) / ANSWERS_DIR / DRAFT_NAME
     with WRITE_LOCK:
+        existing = load_draft_file(path)
+        cp = existing["checkpoint"] if existing else None
         if draft is None:
+            if checkpoint or cp is None:
+                remove(path)
+                return None
+            draft = EMPTY_DRAFT  # keep the file, so the checkpoint survives
+        draft = clean_draft(draft)
+        if checkpoint:
+            cp = dict(draft)
+        write_draft_file(slug, path, draft, cp)
+        return draft["savedAt"]
+
+
+def cancel_draft(slug):
+    """Forget the changes since the last Save click: go back to the checkpoint,
+    or to no draft if Save was never clicked. Returns the restored draft."""
+    path = subject_dir(slug) / ANSWERS_DIR / DRAFT_NAME
+    with WRITE_LOCK:
+        existing = load_draft_file(path)
+        cp = existing["checkpoint"] if existing else None
+        if cp is None:
             remove(path)
             return None
-        draft = clean_draft(draft)
-        d.mkdir(exist_ok=True)
-        text = (
-            f"# Draft answers: {slug}\n\n"
-            "Not submitted. The assessment browser saves this draft while you answer clarification "
-            "questions; submit it there. The assessor and /clarify ignore this file.\n\n"
-            "```json\n" + json.dumps(draft, indent=2, ensure_ascii=False) + "\n```\n"
-        )
-        write_atomic(path, text)
-        return draft["savedAt"]
+        cp = {k: v for k, v in cp.items() if k != "checkpoint"}
+        write_draft_file(slug, path, cp, cp)
+        return cp
 
 
 def submit(slug, body):
@@ -453,7 +498,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.send_body(200, target.read_bytes(), "text/plain; charset=utf-8")
         elif url.path == "/api/draft":
             try:
-                self.send_json(200, {"draft": read_draft(query.get("subject", [""])[0])})
+                draft, checkpoint_at = read_draft(query.get("subject", [""])[0])
+                self.send_json(200, {"draft": draft, "checkpointAt": checkpoint_at})
             except (RequestError, ValueError) as e:
                 self.send_json(getattr(e, "status", 500), {"error": str(e)})
         else:
@@ -465,7 +511,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
             url = urllib.parse.urlsplit(self.path)
             slug = body.get("subject")
             if url.path == "/api/draft":
-                self.send_json(200, {"savedAt": save_draft(slug, body.get("draft"))})
+                checkpoint = body.get("checkpoint") is True
+                saved_at = save_draft(slug, body.get("draft"), checkpoint)
+                self.send_json(200, {"savedAt": saved_at, "checkpointAt": saved_at if checkpoint else None})
+            elif url.path == "/api/cancel":
+                draft = cancel_draft(slug)
+                self.send_json(200, {"draft": draft, "checkpointAt": (draft or {}).get("savedAt")})
             elif url.path == "/api/submit":
                 self.send_json(200, {"file": submit(slug, body)})
             elif url.path == "/api/withdraw":

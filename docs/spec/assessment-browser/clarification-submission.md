@@ -22,15 +22,23 @@
     - Save the session (who is answering, and the answers so far) as a draft, so the user can close the browser and later load and continue.
     - Save automatically as the user types, and also when they choose Save.
     - One draft per subject: output/{{project-description}}/answers/draft.md
+    - If the draft can't be read, show an error and turn off saving and Cancel, so the draft isn't overwritten.
 - Submit the answers.
     - Before submitting, show a summary: questions answered, marked "Don't know", and skipped.
+        - A question marked Answer but left empty counts as skipped; say so in the summary.
+    - Don't submit until:
+        - who is answering is filled in
+        - there is at least one answer or "Don't know"
+        - no answer contains what looks like a full card number
+        - every question that changed since it was answered has been reviewed (see Questions that change before submission)
     - Write the submission as a new file: output/{{project-description}}/answers/answers-<YYYYMMDD-HHMMSS>.md
         - Never overwrite a file; if the name is taken, add a suffix (-2, -3 and so on).
     - Time stamp the submission in local time with the UTC offset, for example 2026-10-08T15:05:12+08:00.
     - Clear the draft after a successful submission, so the user starts a new session with no answers.
-- Cancel the submission.
+- Cancel changes since the last Save.
     - Upon user confirmation, forget all changes made in the current session after the most recent save.
     - A previous save, if any, should still be retained.
+    - The most recent save is the last time the user chose Save, not an automatic save. The draft keeps that save as a checkpoint; Cancel goes back to it, or clears the draft if the user never chose Save.
 - Withdraw a submission.
     - A pending submission can be withdrawn from the browser before a re-assessment uses it.
     - Withdrawing sets its Status to Withdrawn; the file is kept as a record.
@@ -57,7 +65,7 @@
     - Warn the user if an answer seems to contain a password, key or token, and suggest recording only that the item exists.
     - Don't accept an answer that contains what looks like a full card number (13 to 19 digits that pass the Luhn check). Don't save it in the draft either: the draft keeps that answer blank, so the number never reaches the disk.
 - Questions that change before submission:
-    - If the clarifications file has changed since the session started, show which of the session's questions changed, or are no longer Open, and let the user review them before submitting.
+    - If the clarifications file has changed since the session started, show which of the session's questions changed, or are no longer Open, and let the user review them before submitting. The user marks them as reviewed once checked.
 - Contradictions:
     - The browser doesn't check answers for contradictions, because it uses no agent. The assessor checks them when it uses the submission, including two pending submissions that answer the same question differently.
 
