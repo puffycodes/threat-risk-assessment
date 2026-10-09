@@ -234,7 +234,7 @@ Open the subject to see the risk matrix and register, then go through the TRA, d
 ### What it does
 
 1. Follows the 11 process steps in order: scope → assets → threats → vulnerabilities → controls → likelihood → impact → risk rating → treatment → report → monitoring.
-2. Fills in the template, keeping all of its sections, numbering and table columns.
+2. Fills in the TRA template and the clarifications template, keeping all of their sections, numbering, table columns and field names.
 3. Scores each risk as Likelihood × Impact on the template's 5 × 5 matrix: Low 1–4, Medium 5–9, High 10–15, Critical 16–25.
 4. Writes every unanswerable question twice: in Appendix B of the TRA and in the clarifications file, with matching Q- numbers.
 5. Checks itself before finishing:
@@ -244,6 +244,8 @@ Open the subject to see the risk matrix and register, then go through the TRA, d
    - Appendix B matches the clarifications file
    - every claim about threat activity behind a likelihood cites a source
    - risks that share an event give it the same likelihood, or explain why not
+   - every SE- and AS- ID it cites exists
+   - every pending browser submission it used is marked as used
 
 ### How it treats evidence
 
@@ -253,9 +255,10 @@ Open the subject to see the risk matrix and register, then go through the TRA, d
 - Likelihoods are argued from evidence:
   - A claim about threat activity, such as "phishing is common against this sector", needs a source: threat intelligence, incident history or a clarification answer. Without one, the likelihood rests on the system's own exposure and controls.
   - The organization's sector or profile is never guessed from clues such as a job title; if it matters, it becomes a clarification question.
-  - An event shared by several risks, such as a stolen admin password, gets the same likelihood in each, or the rationale explains why not.
+  - An event shared by several risks, such as a stolen admin password, gets the same likelihood in each, or the rationale explains why not. Each one is listed in the Shared events table in §8 (SE-1, SE-2 and so on), and the risks that depend on it cite it.
   - Where one way in leads to outcomes with different impacts, they are scored as separate risks, or the rationale explains why the worst outcome is as likely as the easiest way in.
 - A system description from the summarizer is read by its labels: Given items are evidence, Given (unverified) items are rated conservatively, and Assumed items stay assumptions. Its Unknowns become clarification questions, and for each of its Inconsistencies the TRA records which version it used and why.
+- In the treatment plan (§9), a risk's target date is when all of its actions are due, so its residual rating applies from then. The actions are numbered, and one due earlier or recurring carries its own date or interval, such as "(by 2026-10-23)" or "then yearly". The designer takes each control's target date from these.
 - Owners, approvers, signatures and risk acceptance are left blank or `TBD` for humans to complete.
 
 ### Re-assessment
@@ -330,7 +333,8 @@ The control list also has a risk-coverage table, a table showing what happens to
 
 - **It derives; it doesn't assess.** It never adds or re-scores risks. If it finds a gap in the TRA, it tells you to re-assess.
 - **SC- IDs are stable.** They are never renumbered or reused, and a dropped control is marked `Retired`. That makes the control list safe to track in a ticketing system.
-- **Compliance differences are flagged, not hidden.** If a requirement is stricter than the TRA (for example, PCI DSS requiring firewall reviews every six months when the TRA says yearly), both figures are shown. The TRA is left unchanged; fix it at the next re-assessment.
+- **Compliance differences are flagged, not hidden.** If a requirement is stricter than the TRA (for example, PCI DSS requiring firewall reviews every six months when the TRA says yearly), both figures are shown in the control after "DIFFERENCE:", and the control is listed in section 1 of the control list. The TRA is left unchanged; fix it at the next re-assessment.
+- **Conditional controls are marked.** A control that may already be met once an open question is answered, such as a claimed control the TRA doesn't credit until someone confirms it, is written as evidence collection and listed in section 1.
 
 ---
 
@@ -416,6 +420,8 @@ If an answer contradicts an earlier answer or a fact in the TRA, Claude quotes b
 
 The assessor takes answers at face value. If an answer would lower a rating and it overturns what someone else said, such as the System owner, have that person confirm it, or supply evidence like a configuration export or a log sample, before you re-assess. The interview never changes a question's status, never re-assesses, and never records secrets such as passwords or full card numbers. It is a skill rather than an agent because it needs to ask you questions as it goes, and agents run in the background.
 
+If a question already has an answer in the file that no re-assessment has used yet, the interview shows it and asks whether to keep it, replace it or add to it. An addition is written below the existing answer as a **Further answer**, with its own Answered by and Answered on.
+
 If someone has answered a question in the assessment browser and the answer is still pending, the interview shows that answer and asks whether to keep it (the question is skipped), add to it, or correct it. To check pending answers without answering anything, run `/clarify <subject> --review-submissions`. It reports contradictions, possible secrets and answers too vague to change a rating, and writes nothing.
 
 ### In the assessment browser
@@ -426,7 +432,8 @@ For people who don't use Claude Code. Start the [assessment browser](#browsing-t
 - For each Open question, write an answer, choose **Don't know**, or **Skip** it. Answers already given, in the clarifications file or in a pending submission, are shown so you don't answer twice.
 - Your answers are saved as a draft while you type (`output/<subject>/answers/draft.md`), so you can close the browser and continue later.
 - **Save** also marks a point to come back to. **Cancel** asks for confirmation, then forgets every change since you last clicked Save, and the draft goes back to that save. If you never clicked Save, Cancel clears the draft.
-- **Review and submit** shows what you answered, marked "Don't know" and skipped, then writes a new file, `output/<subject>/answers/answers-<YYYYMMDD-HHMMSS>.md`, and clears the draft. An earlier submission is never overwritten.
+- **Review and submit** shows what you answered, marked "Don't know" and skipped, then writes a new file, `output/<subject>/answers/answers-<YYYYMMDD-HHMMSS>.md`, and clears the draft. An earlier submission is never overwritten. A question marked Answer but left empty counts as skipped.
+- **Submit** stays disabled until you've entered who is answering, given at least one answer or "Don't know", removed any card numbers, and reviewed any questions that changed since you answered them.
 - A submission stays **Pending** until the next re-assessment. The assessor then copies its answers into the clarifications file, with who answered and when, and marks it **Used in TRA version X.Y**. Until then you can **Withdraw** it from the Questions tab; the file is kept as a record.
 
 The browser doesn't change the clarifications file or any other assessment document. It won't save or submit an answer that looks like a full card number, and it warns about anything that looks like a password, key or token. It can't check answers for contradictions, because it uses no agent; the assessor does that when it uses them, and `/clarify --review-submissions` can do it sooner. If the clarifications file changes while you're answering, for example after a re-assessment, the browser shows which of your questions changed and asks you to review them before you submit.
@@ -445,6 +452,7 @@ Each question in `clarifications-needed-<slug>.md` looks like this (the full lay
 ```
 
 - **Write your answer after `**Answer:**`**, then add `- **Answered by:** <name or role>` and `- **Answered on:** <YYYY-MM-DD>` below it. Leave the rest alone. The agent sets the **Status** when it uses the answer.
+- **To add to an existing answer,** don't edit it. Add `- **Further answer:** <your answer>` below its Answered on line, followed by your own Answered by and Answered on lines.
 - **Start with the questions near the top.** They are the most likely to change a rating; the "Why it matters" line says how.
 - **Partial answers are fine.** The agent uses what you give, marks the question "Answered in part", and adds a follow-up question for the rest.
 - **Be specific.** "Apache 2.4.62 on Ubuntu 24.04" lets the agent check for known vulnerabilities; "Apache" does not.
