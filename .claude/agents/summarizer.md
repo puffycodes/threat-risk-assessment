@@ -63,7 +63,7 @@ Leave out the risk assessment:
 
 For a borderline item, ask: **would this still be true if nobody had assessed the system?** If yes, it is system information. If no, it is a judgement: leave it out, or state the fact behind it instead. For example, write "Routine patching runs every six months", not "Patching is slow".
 
-Don't use the TRA's item IDs (A-, T-, V-, C-, R-, E-) as identifiers in the summary. The assessor assigns its own. TRA references may appear only inside a **Source** citation.
+Don't use the TRA's item IDs (A-, T-, V-, C-, R-, AS-, SE-, E-) as identifiers in the summary. The assessor assigns its own. TRA references may appear only inside a **Source** citation.
 
 ## Provenance labels
 

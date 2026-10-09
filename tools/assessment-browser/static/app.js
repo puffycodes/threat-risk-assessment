@@ -631,7 +631,7 @@ async function viewHome() {
   const subjects = await Promise.all(state.index.subjects.map(s => buildSubject(s.slug)));
   const cards = subjects.map(b => {
     const risks = b.risks ? b.risks.risks : [];
-    const open = b.questions.filter(q => q.status === 'open' || q.status === 'partial').length;
+    const open = b.questions.filter(q => q.status === 'open').length;
     const pending = b.questions.filter(q => q.status === 'pending').length;
     const meta = b.tra ? b.tra.meta : null;
     const kinds = [...new Set(b.docs.filter(d => d.kind !== 'submission').map(d => KIND_SHORT[d.kind]))].join(' · ');
@@ -717,7 +717,7 @@ function viewOverview(b) {
   if (R && R.risks.length) {
     const cur = countBy(R.risks, 'rating');
     const res = countBy(R.risks, 'rrating');
-    const qOpen = b.questions.filter(q => q.status === 'open' || q.status === 'partial').length;
+    const qOpen = b.questions.filter(q => q.status === 'open').length;
     const qPending = b.questions.filter(q => q.status === 'pending').length;
     body += `<section class="tiles">
       ${RATINGS.map(r => `<div class="tile">
@@ -726,7 +726,7 @@ function viewOverview(b) {
         <div class="tile-sub">${R.hasTreatment ? `${res[r] || 0} after treatment` : 'risks'}</div></div>`).join('')}
       ${b.questions.length ? `<a class="tile" href="#/s/${enc(b.slug)}/questions">
         <div class="tile-label">Questions</div><div class="tile-num">${qOpen}</div>
-        <div class="tile-sub">open or answered in part${qPending ? `; ${qPending} awaiting assessment` : ''}</div></a>` : ''}
+        <div class="tile-sub">open${qPending ? `; ${qPending} awaiting assessment` : ''}</div></a>` : ''}
     </section>
     <section class="panel">
       <div class="panel-head"><h2>Risk matrix</h2>
@@ -1003,7 +1003,9 @@ function answerWarning(text) {
 const questionText = q => plain(fieldOf(q, 'question'));
 // What an answer was given against: the question's status and text.
 const questionKey = q => `${q.fileStatus}|${questionText(q)}`;
-const isAnswerable = q => q.fileStatus === 'open' || q.fileStatus === 'partial';
+// Only Open questions are offered: an Answered in part question already has an
+// Open follow-up for what is missing.
+const isAnswerable = q => q.fileStatus === 'open';
 
 function changeReason(q) {
   if (q.fileStatus === 'missing') return 'This question is no longer in the clarifications file.';
@@ -1193,7 +1195,7 @@ async function viewAnswer(b) {
   const qs = answerQuestions(b, s);
   render(`answer:${b.slug}`, `<div class="page">${subjectHeader(b, 'questions')}
     <h2 class="page-h">Answer clarification questions</h2>
-    <p class="muted">Questions that are Open or Answered in part, from <a href="${docRoute(b.slug, b.clar.id)}">${escapeHtml(b.clar.name)}</a>
+    <p class="muted">Open questions from <a href="${docRoute(b.slug, b.clar.id)}">${escapeHtml(b.clar.name)}</a>
       (version ${escapeHtml(b.clar.meta.version)}), most important first. Your answers are saved as a draft while you type, so you can stop and come back later.
       When you submit, the assessor uses them at the next re-assessment. Answer as specifically as you can, and don't include passwords, keys or full card numbers.</p>
     ${s.error && s.noSave ? `<p class="error">${escapeHtml(s.error)}</p>` : ''}

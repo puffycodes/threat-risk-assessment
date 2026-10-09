@@ -67,7 +67,7 @@
 - Each bullet starts with its label and ends with its source, for example:
     - `- **Given:** The firewall allows inbound traffic on ports 80 and 443 only. *(Source: scenario/public-web-server/description.md:4)*`
 - Tables have a Label column and a Source column
-- Don't use the TRA's item IDs (A-, T-, V-, C-, R-, E-) as identifiers; the assessor assigns its own. TRA references appear only inside a Source citation
+- Don't use the TRA's item IDs (A-, T-, V-, C-, R-, AS-, SE-, E-) as identifiers; the assessor assigns its own. TRA references appear only inside a Source citation
 
 ### Given or assumed
 

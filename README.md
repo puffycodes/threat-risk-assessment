@@ -423,7 +423,7 @@ If someone has answered a question in the assessment browser and the answer is s
 For people who don't use Claude Code. Start the [assessment browser](#browsing-the-assessments), open the subject's **Questions** tab and choose **Answer clarification questions**.
 
 - Enter who is answering (name or role). It is recorded with every answer.
-- For each Open or Answered in part question, write an answer, choose **Don't know**, or **Skip** it. Answers already given, in the clarifications file or in a pending submission, are shown so you don't answer twice.
+- For each Open question, write an answer, choose **Don't know**, or **Skip** it. Answers already given, in the clarifications file or in a pending submission, are shown so you don't answer twice.
 - Your answers are saved as a draft while you type (`output/<subject>/answers/draft.md`), so you can close the browser and continue later.
 - **Review and submit** shows what you answered, marked "Don't know" and skipped, then writes a new file, `output/<subject>/answers/answers-<YYYYMMDD-HHMMSS>.md`, and clears the draft. An earlier submission is never overwritten.
 - A submission stays **Pending** until the next re-assessment. The assessor then copies its answers into the clarifications file, with who answered and when, and marks it **Used in TRA version X.Y**. Until then you can **Withdraw** it from the Questions tab; the file is kept as a record.

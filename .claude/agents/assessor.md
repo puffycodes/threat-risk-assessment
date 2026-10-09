@@ -125,7 +125,7 @@ Use them as follows:
   - If the question already has an answer, keep it and add a further answer below its metadata: `- **Further answer:** <answer> (from answers-<YYYYMMDD-HHMMSS>.md)`. Never replace or delete an answer.
   - Below the copied answer, add `- **Answered by:**` with the submission's Answered by, and `- **Answered on:**` with the date part of its Submitted time stamp (YYYY-MM-DD).
   - Copy the answer text exactly. Keep its line breaks, indented two spaces under the list item, and keep any backslash at the start of a line: it stops the line being read as a heading, list item or table row.
-  - If the question is no longer `Open` or `Answered in part`, still copy the answer, and treat it as new evidence.
+  - If the question is no longer `Open` (for example, a re-assessment ran after it was submitted), still copy the answer, and treat it as new evidence.
   - Questions listed under "Don't know" get no answer. Mention them in the revision history row, and when you refresh their Why it matters, consider naming a different role to ask.
 - **Corrections from /clarify.** If an answer in the clarifications file says it corrects a submission's answer (for example "Corrects the pending answer in answers-20261008-150512.md"), still copy the submission's answer as a record, but use the correction as the evidence.
 - **Use the answers like any other answer**: cite them as evidence with who answered and when, set the question's Status as usual, and add follow-up questions. Check them for contradictions with each other, with earlier answers and with the TRA. Record a conflict, for example as an assumption in §2.7, rather than resolve it silently.

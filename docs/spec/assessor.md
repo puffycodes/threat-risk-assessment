@@ -26,9 +26,11 @@
         - Copy each answer into the clarifications file under its question, with Answered by and Answered on from the submission, and note which submission it came from
         - If the question already has an answer, add the new one below it; never replace or delete an answer
         - If an answer in the clarifications file says it corrects a submission's answer (written by /clarify), still copy the submission's answer as a record, but use the correction as the evidence
-        - If a submission answers a question that is no longer Open or Answered in part, still copy it, and treat it as new evidence
+        - If a submission answers a question that is no longer Open (for example, a re-assessment ran after it was submitted), still copy it, and treat it as new evidence
         - Check the answers for contradictions with each other and with the TRA, as for any other evidence, and record conflicts rather than resolve them
+        - Questions listed under "Don't know" get no answer; mention them in the revision history row, and consider naming a different role to ask
         - Set the submission's Status to Used in TRA version X.Y; never change its answers
+        - Name the submissions used in the revision history rows of the TRA and the clarifications file
 
 - Re-assessment
     - When asked to re-assess, or when the output already exists, find what is new: compare the source material and the clarification answers against the evidence already recorded in Appendix B of the TRA
@@ -37,7 +39,7 @@
     - Explain every rating change (old score → new score, and why) in the rating history under the risk register (§8)
     - Add a "What changed in vX.Y" line to the executive summary
     - The revision history row lists the evidence used, and the items and risks that changed
-    - Refresh the Why it matters text of every Open question so any ratings it quotes match the current TRA; leave Answered questions as a record
+    - Refresh the Why it matters text of every Open question so any ratings it quotes and any effects it predicts ("would drop to Medium") match the current TRA; leave Answered and Answered in part questions as a record
     - A re-assessment can also be asked for to fix gaps that the designer or a reviewer found, with no new evidence: check each gap against the TRA, fix the ones that hold, say why for any that don't, and handle rating changes and missing questions as above
 
 ### Clarifications file
@@ -117,6 +119,7 @@
 - Risks that share an event give it the same likelihood, or the rationale explains why not
 - Every shared event is in the Shared events table, and every SE- ID cited exists there
 - Every AS- ID cited exists in §2.7
+- Every submission that was Pending at the start has its answers copied into the clarifications file and its Status set to Used in TRA version X.Y
 
 ## Final response
 
@@ -125,4 +128,5 @@
 - Counts by rating, before and after treatment
 - Top three risks, one line each
 - Number of assumptions and open questions needing human input
+- The answer submissions used, if any, and any conflicts they raised
 - For a corrections re-assessment: how each reported gap was handled

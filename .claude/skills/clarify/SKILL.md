@@ -107,6 +107,6 @@ Review the pending submissions instead of interviewing. **Ask no questions and w
   - **Contradictions**: with another answer in the same submission, an answer in another pending submission, an answer in the clarifications file, or a fact in the TRA. Quote both.
   - **Possible secrets**: passwords, keys, tokens or full card numbers. Name the question; don't repeat the value.
   - **Vague answers**: too vague to change a rating, such as "Apache" with no version. Give the follow-up to ask.
-  - **Questions no longer open**: answers to questions that are now `Answered`, or not `Open` or `Answered in part`.
+  - **Questions no longer open**: answers to questions that are no longer `Open`.
 - For each finding, suggest who should confirm it (a role, such as System owner) and how: correct it with `/clarify <slug> Q-NN`, or withdraw the submission in the assessment browser and submit again.
 - Finish with, for each submission: its file, who answered, when, the number of answers and "Don't know" questions, and its findings, or "No issues found". End with the next step, for example: "Ask for a re-assessment of scenario/<slug> to use these answers."

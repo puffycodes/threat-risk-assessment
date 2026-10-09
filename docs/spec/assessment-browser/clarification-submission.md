@@ -10,7 +10,8 @@
 - Link from an "Answer clarification questions" option on each subject's Questions page.
 - Ask who is answering (name or role) at the start of a session.
     - Required before submitting; it is recorded as Answered by for every answer in the submission.
-- Show the list of clarification questions that are Open or Answered in part, in file order (the file puts the most important first).
+- Show the list of clarification questions that are Open, in file order (the file puts the most important first).
+    - Answered in part questions are not offered: the assessor adds an Open follow-up question for what is missing.
     - For each question, show the question, its Why it matters text, and any answer already given in the clarifications file or in a pending submission, so the user doesn't answer it twice by mistake.
 - For each question, allow the user to:
     - Write a free-text answer
@@ -51,13 +52,13 @@
     - Warn the user if an answer seems to contain a password, key or token, and suggest recording only that the item exists.
     - Don't accept an answer that contains what looks like a full card number.
 - Questions that change before submission:
-    - If the clarifications file has changed since the session started, show which of the session's questions changed, or are no longer Open or Answered in part, and let the user review them before submitting.
+    - If the clarifications file has changed since the session started, show which of the session's questions changed, or are no longer Open, and let the user review them before submitting.
 - Contradictions:
     - The browser doesn't check answers for contradictions, because it uses no agent. The assessor checks them when it uses the submission, including two pending submissions that answer the same question differently.
 
 ## Security
 
-- The browser writes only to output/{{project-description}}/answers/, and only for a subject that exists.
+- The browser writes only to output/{{project-description}}/answers/, and only for a subject that has a clarifications file.
 - Accept saves, submissions and withdrawals only from the browser's own page, so another website open in the same browser can't send answers.
 - Limit the size of an answer and of a submission.
 - Like every other output file, the answers stay out of git (output/ is git-ignored).

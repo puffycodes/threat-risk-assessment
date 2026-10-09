@@ -87,7 +87,7 @@ With `--review-submissions`, review the pending submissions instead of interview
     - Answers that contradict each other, an answer in another pending submission, an answer in the clarifications file, or a fact in the TRA
     - Answers that seem to contain secrets: passwords, keys, tokens or full card numbers
     - Answers too vague to change a rating, e.g. "Apache" with no version, with the follow-up to ask
-    - Answers to questions that are no longer Open or Answered in part
+    - Answers to questions that are no longer Open
 - For each point, suggest who should confirm it (name the role, e.g. System owner) and how: correct it with `/clarify`, or withdraw the submission in the browser
 - If there are no pending submissions, say so and stop
 
