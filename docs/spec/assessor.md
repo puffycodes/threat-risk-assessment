@@ -16,6 +16,7 @@
 
 - Clarification
     - If there are any clarifications required from the user, output it in the file output/{{project-description}}/clarifications-needed-{{project-description}}.md
+    - Default template is docs/templates/clarifications-template.md
     - Always write the file; if there is nothing to ask, say so, so a reader knows the question was considered
     - If the file already exists, read it first, then update it, bump the version and add a revision history row
     - Answers a human has written in the file are source material: use them in place of the assumptions they resolve
@@ -39,16 +40,10 @@
     - Refresh the Why it matters text of every Open question so any ratings it quotes match the current TRA; leave Answered questions as a record
     - A re-assessment can also be asked for to fix gaps that the designer or a reviewer found, with no new evidence: check each gap against the TRA, fix the ones that hold, say why for any that don't, and handle rating changes and missing questions as above
 
-### Clarifications file format
+### Clarifications file
 
-- Header table: Version, Date, Related TRA (file name and version)
-- Revision history table: Version, Date, Changes
-- One section per question, headed `### Q-NN: <short title>`, with:
-    - **Question:** the question
-    - **Why it matters:** the assumptions (AS-), controls (C-) and risks (R-) it affects, and how the answer could change a rating
-    - **Status:** Open, Answered, or Answered in part
-    - **Answer:** left blank for a human
-    - **Answered by** and **Answered on:** added below Answer when a human answers (for example by the /clarify skill); the assessor fills them in only when it copies an answer from a browser submission, and then copies them from the submission
+- The layout (header table, revision history, question headings, and the field names and order) is in the clarifications template; keep it exactly, because /clarify and the assessment browser parse it
+- Answered by and Answered on are added below an answer when a human answers (for example by the /clarify skill); the assessor fills them in only when it copies an answer from a browser submission, and then copies them from the submission
 - When citing an answer as evidence, include who answered and when, if given
 - Number questions Q-01, Q-02 and so on, with the questions most likely to change a rating first
 - Use the same Q- numbers in the open questions in Appendix B of the TRA
@@ -63,7 +58,7 @@
 ### Process and template
 
 - Follow the process steps in order; don't skip or reorder them
-- Keep the template's section headings, numbering and table columns
+- Keep the templates' section headings, numbering, table columns and field names
 - Replace every [placeholder]; remove example rows and guidance notes
 - Keep the ID schemes (A-, T-, V-, C-, R-, AS-, SE-, E-, Q-) consistent so every risk traces back to its asset, threat, vulnerability and controls; never renumber or reuse an ID
 - Write each assumption as a list item starting with its ID in bold (`- **AS-01:** ...`); when evidence resolves or withdraws one, add a note with the version instead of deleting it
@@ -112,7 +107,7 @@
 
 ### Self-check before finishing
 
-- No [placeholder] text left
+- No [placeholder] text or template guidance left, in the TRA or the clarifications file
 - Every risk in the risk register (§8) appears in the treatment plan (§9)
 - Residual counts in §10 match §9
 - Executive summary counts match §8

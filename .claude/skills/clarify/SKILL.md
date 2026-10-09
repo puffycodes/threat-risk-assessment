@@ -17,7 +17,7 @@ Arguments: `$ARGUMENTS`
 - The subject can be a slug, such as `public-web-server`, or a name. Turn a name into a slug: lowercase, with spaces replaced by hyphens, so `public web server` becomes `public-web-server`.
 - If no subject is given, use Glob for `output/*/clarifications-needed-*.md`. If there is exactly one, use it. If there are several, or the subject matches none of them, list them and ask the user which one.
 - The file is `output/<slug>/clarifications-needed-<slug>.md`. If it doesn't exist, stop and tell the user to run the assessor first.
-- Read the whole file. Note its version, and each question's ID, title, question text, Why it matters, Status and Answer.
+- Read the whole file. Note its version, and each question's ID, title, question text, Why it matters, Status and Answer. Its layout is defined in `docs/templates/clarifications-template.md`; write answers in exactly that layout, because the assessor and the assessment browser parse it.
 - If the TRA exists (`output/<slug>/threat-risk-assessment-<slug>.md`), read it too, but only to check answers for contradictions (step 5). Never edit it.
 - **Pending submissions.** People can also answer in the assessment browser. Use Glob for `output/<slug>/answers/answers-*.md` and read each file. Its header table has Status, Submitted (a time stamp), Answered by and the clarifications file version; each answer is under a `### Q-NN: <title>` heading, with `- **Question:**` and `- **Answer:**`; questions marked "Don't know" are listed under `## Don't know`.
   - Use only submissions whose Status is `Pending`, oldest first by Submitted. Ignore `Used in TRA version X.Y` and `Withdrawn`: their answers are already in the clarifications file or no longer count.

@@ -44,6 +44,7 @@ To read the results, the [assessment browser](#browsing-the-assessments) shows e
 │   ├── threat-risk-assessment-process.md    # the 11-step TRA process the assessor follows
 │   ├── templates/
 │   │   ├── threat-risk-assessment-template.md  # the TRA document template
+│   │   ├── clarifications-template.md          # the clarifications file layout
 │   │   ├── security-design-template.md         # the security design template
 │   │   └── security-controls-template.md       # the security control list template
 │   └── spec/
@@ -222,6 +223,7 @@ Open the subject to see the risk matrix and register, then go through the TRA, d
 |---|---|
 | Process | `docs/threat-risk-assessment-process.md` |
 | Template | `docs/templates/threat-risk-assessment-template.md` |
+| Clarifications template | `docs/templates/clarifications-template.md` |
 | Subject | Required: a scenario folder or file, a codebase, architecture docs, or notes in the request |
 | Output | `output/<slug>/threat-risk-assessment-<slug>.md` |
 | Clarifications | `output/<slug>/clarifications-needed-<slug>.md` |
@@ -430,7 +432,7 @@ The browser doesn't change the clarifications file or any other assessment docum
 
 ### By editing the file
 
-Each question in `clarifications-needed-<slug>.md` looks like this:
+Each question in `clarifications-needed-<slug>.md` looks like this (the full layout is in `docs/templates/clarifications-template.md`):
 
 ```markdown
 ### Q-03: Patching
@@ -485,7 +487,7 @@ The browser reads the documents as the templates lay them out. If a page looks w
 | Risk register and matrix | In the TRA, a table whose first column is `Risk ID` with `L`, `I`, `Score` and `Rating` columns (§8) |
 | Ratings after treatment | A `Risk ID` table with `Residual L`, `Residual I`, `Residual score` and `Residual rating` columns (§9) |
 | Matrix colours | A table whose first heading contains `Likelihood`, with cells such as `15 H` (§3.4) |
-| Questions | In the clarifications file, `### Q-nn: Title` headings followed by `- **Status:**`, `- **Answer:**` and other `- **Field:**` lines |
+| Questions | In the clarifications file (`clarifications-template.md`), `### Q-nn: Title` headings followed by `- **Status:**`, `- **Answer:**` and other `- **Field:**` lines. `/clarify` reads the same layout. |
 | ID links | An ID is defined by a table row whose first cell starts with it, a heading that starts with it (`### Q-01: ...`), or a list item that starts with it in bold (`- **AS-01:** ...`) |
 | Document type | The file names shown in [Repository layout](#repository-layout); other `.md` files are shown under their own name |
 
@@ -528,7 +530,7 @@ To change an agent's behaviour:
 2. Ask Claude Code to rebuild the agent from the spec, for example: `rewrite the agent at docs/spec/assessor.md`.
 3. Review the diff and commit both files together.
 
-To change how assessments are done for every subject, edit `docs/threat-risk-assessment-process.md` or the templates in `docs/templates/`. The agents read them on every run and never modify them. If you rename a table column or change how questions are laid out, check that the assessment browser still reads them (see [What it relies on](#what-it-relies-on)).
+To change how assessments are done for every subject, edit `docs/threat-risk-assessment-process.md` or the templates in `docs/templates/`. The agents read them on every run and never modify them. If you rename a table column or change how questions are laid out (`clarifications-template.md`), check that the assessment browser and `/clarify` still read them (see [What it relies on](#what-it-relies-on)).
 
 ### Changing the assessment browser
 

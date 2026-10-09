@@ -14,6 +14,7 @@ Work these out from the request before starting. Use the default for anything th
 |---|---|
 | Process | `docs/threat-risk-assessment-process.md` |
 | Template | `docs/templates/threat-risk-assessment-template.md` |
+| Clarifications template | `docs/templates/clarifications-template.md` |
 | Output | `output/{{project-description}}/threat-risk-assessment-{{project-description}}.md` |
 | Clarifications | `output/{{project-description}}/clarifications-needed-{{project-description}}.md` |
 | Answer submissions | `output/{{project-description}}/answers/answers-*.md`, from the assessment browser (read if any exist) |
@@ -26,7 +27,7 @@ If the output file already exists, read it first and update it rather than overw
 ## Procedure
 
 1. **Load the process.** Read the process file in full. Its steps define the work, in that order. Do not skip or reorder steps.
-2. **Load the template.** Read the template file in full. Its structure defines the output: keep its section headings, numbering and table columns.
+2. **Load the templates.** Read the TRA template and the clarifications template in full. Their structure defines the outputs: keep their section headings, numbering, table columns and field names.
 3. **Load existing outputs.** If the output file or the clarifications file already exists, read it in full. Answers a human has written into the clarifications file are source material: cite them as evidence and use them in place of the assumptions they resolve. Also read any pending answer submissions from the assessment browser, and copy their answers into the clarifications file before you use them (see Answer submissions from the assessment browser).
 4. **Gather evidence about the subject.** Read every file or directory you were pointed to. For a codebase or configuration, use Glob and Grep to find architecture, data stores, authentication, network exposure, dependencies, secrets handling, logging and backups. Use WebSearch or WebFetch only for public threat intelligence or vulnerability information (such as CVEs for identified component versions), and for public standards and guidance (such as PCI DSS requirements). Record what you use as evidence. Never send details of the subject to external services. If a source file is a system description written by the summarizer, read it as described in System descriptions from the summarizer below.
 5. **Go through the process.** Take each process step in turn and produce its outputs:
@@ -48,9 +49,9 @@ If the output file already exists, read it first and update it rather than overw
    - Calculate every score as Likelihood × Impact, and make the rating match the matrix bands.
    - Write the executive summary last. Its counts must match the risk register.
    - Set Status to `Draft` and the assessment date to today. Leave signature, approver and risk-acceptance fields blank for humans to complete.
-7. **Write the clarifications file.** Use the format below. If there is nothing to ask, still write the file and say so, so a reader knows the question was considered.
+7. **Write the clarifications file.** Fill in the clarifications template, following the rules in Clarifications file below. If there is nothing to ask, still write the file and say so, so a reader knows the question was considered.
 8. **Self-check before finishing.** Confirm the following:
-   - No `[placeholder]` text is left.
+   - No `[placeholder]` text or template guidance is left, in the TRA or the clarifications file.
    - Every risk in §8 appears in §9.
    - The residual counts in §10 match §9.
    - The executive summary counts match §8.
@@ -77,31 +78,7 @@ When you are asked to re-assess, or the TRA already exists:
 
 ## Clarifications file
 
-The clarifications file is where a human answers the questions the assessment couldn't. Lay it out as follows:
-
-```markdown
-# Clarifications Needed: <Subject name>
-
-| Field | Value |
-|---|---|
-| Version | 0.1 |
-| Date | YYYY-MM-DD |
-| Related TRA | threat-risk-assessment-<slug>.md (version) |
-
-## Revision history
-
-| Version | Date | Changes |
-|---|---|---|
-
-## Questions
-
-### Q-01: <short question title>
-
-- **Question:** <the question>
-- **Why it matters:** <the assumptions (AS-), controls (C-) and risks (R-) it affects, and how the answer could change a rating>
-- **Status:** Open
-- **Answer:**
-```
+The clarifications file is where a human answers the questions the assessment couldn't. Lay it out as the clarifications template does: keep its header table, revision history, question headings and field names and order exactly, because `/clarify` and the assessment browser parse them. Replace every `[bracketed]` placeholder, remove the `>` guidance notes, and don't copy the example questions. These rules say how the file changes over time:
 
 - Number questions `Q-01`, `Q-02` and so on. Use the same numbers in Appendix B of the TRA.
 - Put the questions most likely to change a rating first.

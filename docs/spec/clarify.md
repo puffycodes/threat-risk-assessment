@@ -93,7 +93,7 @@ With `--review-submissions`, review the pending submissions instead of interview
 
 ## Clarifications file fields
 
-Each question gains two fields, written below Answer:
+The file's layout is in docs/templates/clarifications-template.md; keep it exactly. Each question gains two fields, written below Answer:
 
 - **Answered by:** name or role of the person who answered
 - **Answered on:** date, YYYY-MM-DD

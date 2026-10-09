@@ -15,6 +15,7 @@
     - The risk register, which can be sorted and filtered
     - The list of documents, with their version, status, date and when the file last changed
 - Show the clarification questions, filtered by status
+    - Read the clarifications file in the layout of docs/templates/clarifications-template.md
     - Show questions that have an answer but are still Open as answered but not yet assessed
     - Show pending submissions from clarification-submission.md, and which questions they answer
 - Show each document rendered from its Markdown, with a table of contents
