@@ -246,7 +246,7 @@ Open the subject to see the risk matrix and register, then go through the TRA, d
 ### How it treats evidence
 
 - Facts must come from the source material or the clarification answers, cited by file and line or question number.
-- Anything else is an **assumption**. Assumptions are recorded in §2.7 and marked `(assumed)` in tables.
+- Anything else is an **assumption**. Assumptions are recorded in §2.7 and numbered AS-01, AS-02 and so on, and marked `(assumed, AS-nn)` in tables.
 - Ratings are conservative. A control with no evidence is rated `Partial` or `Ineffective`, never `Effective`.
 - Likelihoods are argued from evidence:
   - A claim about threat activity, such as "phishing is common against this sector", needs a source: threat intelligence, incident history or a clarification answer. Without one, the likelihood rests on the system's own exposure and controls.
@@ -318,7 +318,7 @@ The designer needs a finished TRA. If there's no TRA for the subject, it stops a
 | Status | **New**: nothing comparable exists today. **Strengthen**: builds on an existing TRA control (C-). **Replace**: supersedes an assumed or ineffective one. **Retired**: no longer needed; kept with the reason, and the ID is never reused. |
 | Risks treated | The TRA risks (R-) the control addresses |
 | Priority | From the highest current rating among those risks: P1 Critical, P2 High, P3 Medium, P4 Low |
-| Target date | The earliest TRA treatment date among those risks |
+| Target date | The earliest TRA treatment date among the actions the control implements: an action's own date where the TRA gives one, otherwise its risk's target date |
 | Compliance reference | Only for frameworks the TRA says apply, such as PCI DSS |
 | Verification | The evidence or test that shows the control works |
 
@@ -501,6 +501,7 @@ The browser reads the documents as the templates lay them out. If a page looks w
 | C- | Existing control | TRA §7 |
 | R- | Risk | TRA §8 (treatment in §9) |
 | AS- | Assumption | TRA §2.7 |
+| SE- | Shared event: a way in that several risks depend on, with one likelihood | TRA §8 |
 | E- | Evidence reference | TRA Appendix B |
 | Q- | Clarification question | Clarifications file and TRA Appendix B |
 | DP-, F-, DD- | Design principle, data flow, design decision | Security design |

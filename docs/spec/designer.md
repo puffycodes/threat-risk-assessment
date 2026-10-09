@@ -39,8 +39,8 @@
 
 ### Security controls contents
 
-- Document control and revision history, including the TRA version it is based on
-- 1. How to read the list: status, priority and target date rules
+- Document control and revision history, including the TRA and clarifications versions it is based on
+- 1. How to read the list: status, priority and target date rules, the controls that differ from a compliance requirement, and the conditional controls
 - 2. Summary: counts by priority and by status, and immediate interim actions
 - 3. Control list, grouped by domain, with these columns:
     - ID, Control, Type, Status, Existing control, Risks treated, Priority, Target date, Compliance reference, Verification, Owner
@@ -72,9 +72,10 @@
     - Strengthen: builds on an existing TRA control (C-)
     - Replace: supersedes an assumed or ineffective existing control
 - Priority comes from the highest current TRA rating among the risks a control treats: P1 Critical, P2 High, P3 Medium, P4 Low
-- Target dates come from the TRA treatment plan for those risks; use the earliest
+- Target dates come from the TRA treatment plan: the earliest date among the actions a control implements, using an action's own date where the TRA gives one, otherwise its risk's target date; give the interval of a recurring action
+- A control that may already be met if an open question confirms it is a conditional control: write it as evidence collection and list it in section 1
 - Cite compliance requirements only for frameworks the TRA says apply (§2.6), and note when applicability depends on an open question
-- If a compliance requirement is stricter than the TRA, show both figures and flag the difference; don't change the TRA
+- If a compliance requirement is stricter than the TRA, show both figures in the control after "DIFFERENCE:" and list the control in section 1; don't change the TRA
 
 ### Evidence and honesty
 

@@ -11,7 +11,7 @@
 | Version | [0.1] |
 | Status | [Draft / In review / Approved] |
 | Date | [YYYY-MM-DD] |
-| Based on | [TRA-YYYY-NNN v0.x] |
+| Based on | [TRA-YYYY-NNN v0.x; clarifications v0.x] |
 | Companion document | [Security Design: SD-YYYY-NNN v0.x] |
 | Author(s) | [Name, role] |
 | Reviewer / approver | [Name, role] |
@@ -33,9 +33,11 @@
   - **Replace:** supersedes an assumed or ineffective existing control.
   - **Retired:** no longer needed; the reason is given. IDs are never reused.
 - **Priority** comes from the highest *current* TRA rating among the risks a control treats: **P1** Critical, **P2** High, **P3** Medium, **P4** Low.
-- **Target date** is the earliest TRA §9 target date among the risks a control treats.
+- **Target date** is the earliest TRA §9 date among the actions a control implements: the action's own date where the TRA gives one, otherwise its risk's target date. A recurring action also gives its interval.
 - **Type:** Preventive, Detective, Corrective, Deterrent or Compensating.
 - **Compliance reference:** [Framework and version, e.g., PCI DSS v4.0.1], cited only because TRA §2.6 says it applies. [Note any applicability that depends on an open question.]
+- **Differences between [framework] and the TRA** are stated in the control text, starting "DIFFERENCE:", with both figures. The TRA is not changed. They are: [SC-nn, SC-nn, or "None"].
+- **Conditional controls:** [SC-nn] may already be met if [an open question (Q-nn)] confirms it. The control then becomes evidence collection. [Or "None".]
 
 ---
 
@@ -65,7 +67,7 @@
 ## 3. Control list
 
 > Group controls by domain. Use only the domains the TRA's actions need. Typical domains: sensitive-data scope, vulnerability and patch management, application security, network and perimeter, identity and access, hardening and configuration, logging/monitoring/response, backup/recovery/resilience.
-> Rename the compliance column to the framework's name (e.g., "PCI DSS"). If a requirement is stricter than the TRA, state both figures in the control and flag the difference.
+> Rename the compliance column to the framework's name (e.g., "PCI DSS"). If a requirement is stricter than the TRA, state both figures in the control after "DIFFERENCE:", and list the control in section 1.
 
 ### 3.1 [Domain, e.g., Identity and access]
 

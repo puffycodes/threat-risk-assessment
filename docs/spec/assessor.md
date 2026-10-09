@@ -65,7 +65,10 @@
 - Follow the process steps in order; don't skip or reorder them
 - Keep the template's section headings, numbering and table columns
 - Replace every [placeholder]; remove example rows and guidance notes
-- Keep the ID schemes (A-, T-, V-, C-, R-) consistent so every risk traces back to its asset, threat, vulnerability and controls
+- Keep the ID schemes (A-, T-, V-, C-, R-, AS-, SE-, E-, Q-) consistent so every risk traces back to its asset, threat, vulnerability and controls; never renumber or reuse an ID
+- Write each assumption as a list item starting with its ID in bold (`- **AS-01:** ...`); when evidence resolves or withdraws one, add a note with the version instead of deleting it
+- List every event that more than one risk depends on in the Shared events table in §8, numbered SE-1, SE-2 and so on
+- In the treatment plan (§9), the Target date is when all of the risk's actions are due; number the actions, and give an action due earlier, or recurring, its own date or interval
 - Calculate every score as Likelihood × Impact, with ratings matching the risk matrix bands
 - Write the executive summary last
 - Set Status to Draft and the assessment date to today
@@ -75,7 +78,7 @@
 ### Evidence and honesty
 
 - Don't invent facts; everything comes from the source material or is marked as an assumption
-- Record assumptions in Assumptions and constraints (§2.7) and mark assumed items in tables with (assumed)
+- Record assumptions in Assumptions and constraints (§2.7) and mark assumed items in tables with (assumed, AS-nn)
 - Use TBD for anything that can't be determined; list it under Open questions in Appendix B and as a question in the clarifications file
 - Cite evidence (file paths with line numbers, document names, interview notes, clarification answers such as `clarifications-needed-<slug>.md Q-03`)
 - Rate conservatively: a control with no evidence is Partial or Ineffective, not Effective
@@ -85,7 +88,7 @@
 - Every claim about threat activity used to set a likelihood (for example, "phishing is common against this sector") must cite a source: public threat intelligence, an incident history, or a clarification answer
     - Don't infer the organization's sector or profile from indirect clues, such as a job title; if it matters, raise a clarification question
     - Without a cited source, base the likelihood only on the system's own exposure and controls, and say so in the rating rationale
-- Give the same event the same likelihood in every risk that depends on it (for example, a stolen administrator password used to log in), or explain the difference in the rating rationale
+- Give the same event the same likelihood in every risk that depends on it (for example, a stolen administrator password used to log in), or explain the difference in the rating rationale; record it in the Shared events table (SE-)
 - When one way in leads to outcomes with different impacts, either score each outcome as its own risk, or, if they are combined, say in the rating rationale why the likelihood applies to the worst outcome
 
 ### System descriptions from the summarizer
@@ -93,7 +96,7 @@
 - Source material may be a system description written by the summarizer agent (its title starts "System Description:" and it has a "How to use this file" section); treat each item by its label:
     - Given: evidence. Cite the description's file and line, and note the original source it cites
     - Given (unverified): evidence that needs care, because who gave it isn't recorded or it is in doubt. Rate conservatively, as if the control or fact were only partly evidenced, and raise a clarification question where it drives a rating
-    - Assumed: an assumption from an earlier assessment, not evidence. Record it in §2.7 and mark it (assumed) in tables
+    - Assumed: an assumption from an earlier assessment, not evidence. Record it in §2.7 and mark it (assumed, AS-nn) in tables
 - Business and threat context: facts people gave about the environment; use them as evidence for threat likelihood and motivation
 - Unknowns: gaps, not assumptions. Raise a clarification question for each one that could change a rating; where you have to assume something to rate a risk, record the assumption in §2.7
 - Inconsistencies: disagreements between earlier sources. Don't resolve them silently: record which version you use and why in §2.7 or the rating rationale, and raise a clarification question where the choice affects a rating
@@ -117,6 +120,8 @@
 - For a summarizer system description: no Assumed item is cited as evidence, and every Inconsistency is recorded with the version used
 - Every threat-activity claim in a likelihood rationale cites a source
 - Risks that share an event give it the same likelihood, or the rationale explains why not
+- Every shared event is in the Shared events table, and every SE- ID cited exists there
+- Every AS- ID cited exists in §2.7
 
 ## Final response
 

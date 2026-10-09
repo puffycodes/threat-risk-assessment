@@ -41,7 +41,10 @@ If the output file already exists, read it first and update it rather than overw
    - Monitoring and review recommendations
 6. **Write the output.** Fill in the template. Write creates the `output/{{project-description}}/` folder if it doesn't exist.
    - Replace every `[bracketed]` placeholder. Remove the example rows and the `>` guidance notes.
-   - Keep the ID schemes (A-, T-, V-, C-, R-) consistent so every risk traces back to its asset, threat, vulnerability and controls.
+   - Keep the ID schemes (A-, T-, V-, C-, R-, AS-, SE-, E-, Q-) consistent so every risk traces back to its asset, threat, vulnerability and controls. Never renumber or reuse an ID.
+   - Write each assumption in §2.7 as a list item that starts with its ID in bold, `- **AS-01:** ...`. Other documents cite assumptions by these IDs, and the assessment browser links them only in this form. When evidence resolves or withdraws an assumption, keep it and add a note with the version, for example `*Resolved in v0.3:* ... (E-12)`.
+   - List every event that more than one risk depends on in the Shared events table in §8, numbered SE-1, SE-2 and so on (see Rules for likelihood and risk scenarios).
+   - In the treatment plan (§9), the Target date is the date by which all of the risk's actions are due, so the residual rating applies from then. Number the actions in each row. Give an action that is due earlier, or recurs, its own date or interval in the action text, for example "(by 2026-10-23)" or "then yearly". The designer takes each control's target date from these.
    - Calculate every score as Likelihood × Impact, and make the rating match the matrix bands.
    - Write the executive summary last. Its counts must match the risk register.
    - Set Status to `Draft` and the assessment date to today. Leave signature, approver and risk-acceptance fields blank for humans to complete.
@@ -55,6 +58,8 @@ If the output file already exists, read it first and update it rather than overw
    - If the source includes a summarizer system description: no Assumed item from it is cited as evidence, and every item under its Inconsistencies is recorded with the version you used.
    - Every claim about threat activity in a likelihood rationale cites a source.
    - Risks that share an event give it the same likelihood, or the rationale explains why not.
+   - Every shared event is in the Shared events table, and every SE- ID cited exists there.
+   - Every AS- ID cited exists in §2.7.
    - Every submission that was `Pending` when you started has its answers copied into the clarifications file and its Status set to `Used in TRA version X.Y`.
 
 ## Re-assessment
@@ -153,7 +158,7 @@ Use them as follows:
 ## Rules for evidence and honesty
 
 - **Do not invent facts.** Every asset, vulnerability and control must come from the source material or be clearly marked as an assumption.
-- Record assumptions in §2.7 (Assumptions and constraints). Mark assumed items in tables with `(assumed)`.
+- Record assumptions in §2.7 (Assumptions and constraints). Mark assumed items in tables with `(assumed, AS-nn)`.
 - If you can't determine something, such as who owns an asset or how effective a control is, write `TBD`. Add it as an **Open questions** entry in Appendix B and as a question in the clarifications file. Don't guess silently.
 - Cite evidence wherever you state a fact: in the vulnerability "Source / evidence" column, in control notes, and in the text. Use file paths with line numbers, document names, interview notes, or clarification answers (for example `clarifications-needed-<slug>.md Q-03`).
 - Rate conservatively. When evidence for a control is missing, treat the control as `Partial` or `Ineffective`, not `Effective`.
@@ -163,7 +168,7 @@ Use them as follows:
 
 - **Cite threat activity.** Every claim about threat activity that you use to set a likelihood, such as "phishing is common against this sector", must cite a source: public threat intelligence, an incident history, or a clarification answer. Without one, base the likelihood only on the system's own exposure and controls, and say so in the rating rationale.
 - **Don't guess the organization's profile.** Don't infer its sector, size or attractiveness to attackers from indirect clues, such as a job title or department name. If it matters to a rating, raise a clarification question.
-- **Keep shared events consistent.** When several risks depend on the same event, such as a stolen administrator password used to log in, give that event the same likelihood in each, or explain the difference in the rating rationale.
+- **Keep shared events consistent.** When several risks depend on the same event, such as a stolen administrator password used to log in, give that event the same likelihood in each, or explain the difference in the rating rationale. Record each shared event in the Shared events table in §8, with its likelihood, the basis for it and the risks that depend on it, and cite its SE- ID in those risks.
 - **Be explicit when combining outcomes.** When one way in leads to outcomes with different impacts, either score each outcome as its own risk, or, if you combine them, say in the rating rationale why the likelihood applies to the worst outcome.
 
 ## System descriptions from the summarizer
@@ -174,7 +179,7 @@ Source material may be a system description written by the summarizer agent from
 |---|---|
 | **Given** | Evidence. Cite the description's file and line, and note the original source it cites, for example `scenario/x/description.md:51 (from clarifications-needed-x.md Q-17)`. |
 | **Given (unverified)** | Evidence that needs care: who gave it isn't recorded, or it is in doubt. Rate conservatively, as if the fact or control were only partly evidenced, and raise a clarification question where it drives a rating. |
-| **Assumed** | An assumption from the earlier assessment, not evidence. Record it in §2.7 and mark it `(assumed)` in tables. |
+| **Assumed** | An assumption from the earlier assessment, not evidence. Record it in §2.7 and mark it `(assumed, AS-nn)` in tables. |
 
 Treat its sections as follows:
 - **Business and threat context:** facts people gave about the environment. Use them as evidence for threat likelihood and motivation.

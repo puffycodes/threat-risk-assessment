@@ -76,7 +76,15 @@
 
 ### 2.7 Assumptions and constraints
 
-- [Assumption or constraint]
+> Number assumptions AS-01, AS-02 and so on, each as a list item that starts with its ID in bold, so other documents can cite it. Never renumber or delete one: when evidence resolves or withdraws it, add a note saying so and in which version, for example "*Resolved in v0.3:* ... (E-12)". Mark assumed items in tables with "(assumed, AS-nn)".
+
+**Assumptions:**
+
+- **AS-01:** [Assumption]
+
+**Constraints:**
+
+- [Constraint, e.g., no testing or scanning was carried out]
 
 ---
 
@@ -196,6 +204,14 @@ Risk score = Likelihood × Impact.
 | R-03 | [Staff misconfiguration exposes data publicly] | A-01 | T-03 | V-03 | C-03 | [3] | [4] | [12] | [High] | [Name] |
 | R-04 | [Extended power loss takes service offline] | A-03 | T-04 | V-04 | None | [2] | [4] | [8] | [Medium] | [Name] |
 
+**Shared events:**
+
+> List every event, such as a way in, that more than one risk depends on, numbered SE-1, SE-2 and so on. Each event has one likelihood, and every risk that depends on it uses that likelihood, or explains in its rationale why not. Never renumber. If no event is shared, write "None".
+
+| Event | Likelihood | Basis | Risks |
+|---|---|---|---|
+| SE-1: [An attacker logs in as an administrator through the remote-access service] | [3 (Possible)] | [Exposure and controls, citing evidence (E-) and threat intelligence] | [R-01 (direct); one way in for R-02] |
+
 **Rationale for key ratings:** [Why the highest-rated risks score as they do, citing evidence (E-) and assumptions (AS-).]
 
 **Rating history:**
@@ -210,9 +226,11 @@ Risk score = Likelihood × Impact.
 
 ## 9. Risk treatment plan
 
+> The **Target date** is the date by which all of the risk's actions are due, so the residual rating applies from then. Number the actions in each row, (1), (2) and so on. Where an action is due earlier, or recurs, give its own date or interval in the action, for example "(by YYYY-MM-DD)" or "then yearly".
+
 | Risk ID | Current rating | Treatment | Recommended action(s) | Owner | Target date | Cost / effort | Residual L | Residual I | Residual score | Residual rating |
 |---|---|---|---|---|---|---|---|---|---|---|
-| R-01 | Critical | Mitigate | [Enforce MFA on all admin accounts; PAM solution] | [Name] | [YYYY-MM-DD] | [Low] | [2] | [5] | [10] | [High] |
+| R-01 | Critical | Mitigate | [(1) Enforce MFA on all admin accounts (by YYYY-MM-DD). (2) PAM solution.] | [Name] | [YYYY-MM-DD] | [Low] | [2] | [5] | [10] | [High] |
 | R-02 | High | Mitigate | [Patch management process; WAF] | [Name] | [YYYY-MM-DD] | [Medium] | [2] | [4] | [8] | [Medium] |
 | R-03 | High | Mitigate | [Awareness training; config baselines and review] | [Name] | [YYYY-MM-DD] | [Low] | [2] | [4] | [8] | [Medium] |
 | R-04 | Medium | Transfer / Accept | [Business interruption insurance] | [Name] | [YYYY-MM-DD] | [Low] | [2] | [4] | [8] | [Medium] |

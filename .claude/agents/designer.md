@@ -49,8 +49,9 @@ If an output file already exists, read it first and update it rather than overwr
      - **Strengthen:** builds on an existing control (C-).
      - **Replace:** supersedes an assumed or ineffective existing control.
    - Set priority from the highest *current* TRA rating among the risks the control treats: P1 Critical, P2 High, P3 Medium, P4 Low.
-   - Set the target date to the earliest TRA §9 target date among those risks.
-   - Add a compliance reference only for frameworks the TRA says apply (§2.6), and note when applicability depends on an open question. Use WebSearch or WebFetch to confirm requirement numbers if you're unsure. If a requirement is stricter than the TRA (for example, a shorter review period), state both figures in the control and flag the difference; don't change the TRA.
+   - Set the target date to the earliest TRA §9 date among the actions the control implements. Use an action's own date where the TRA gives one ("by YYYY-MM-DD"), otherwise its risk's target date. For a recurring action, also give the interval ("then yearly").
+   - Add a compliance reference only for frameworks the TRA says apply (§2.6), and note when applicability depends on an open question. Use WebSearch or WebFetch to confirm requirement numbers if you're unsure. If a requirement is stricter than the TRA (for example, a shorter review period), state both figures in the control after "DIFFERENCE:", and list the control under the differences in section 1 of the control list. Don't change the TRA.
+   - If a control may already be met once an open question is answered (for example, the TRA doesn't credit a claimed control until someone confirms it), write it as evidence collection and list it under the conditional controls in section 1.
    - Say how to verify each control: the evidence or test that shows it works.
 6. **Build the design.**
    - Describe the current state only from evidence (TRA facts and clarification answers), with citations.
