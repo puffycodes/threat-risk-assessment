@@ -28,6 +28,9 @@
         - Never overwrite a file; if the name is taken, add a suffix (-2, -3 and so on).
     - Time stamp the submission in local time with the UTC offset, for example 2026-10-08T15:05:12+08:00.
     - Clear the draft after a successful submission, so the user starts a new session with no answers.
+- Cancel the submission.
+    - Upon user confirmation, forget all changes made in the current session after the most recent save.
+    - A previous save, if any, should still be retained.
 - Withdraw a submission.
     - A pending submission can be withdrawn from the browser before a re-assessment uses it.
     - Withdrawing sets its Status to Withdrawn; the file is kept as a record.
@@ -48,9 +51,11 @@
 ## Rules
 
 - Record answers as the user wrote them; don't add, change or interpret anything.
+    - The one exception: put a backslash before an answer line that starts with a Markdown marker (#, |, >, a list marker, a number followed by . or ), or a code fence), so it can't be read as a heading, table, list or code block. Hide the backslash when showing the answer; the assessor keeps it when copying.
+- Show every answer already in the clarifications file for a question: the Answer and any Further answers, each with who answered and when.
 - Secrets:
     - Warn the user if an answer seems to contain a password, key or token, and suggest recording only that the item exists.
-    - Don't accept an answer that contains what looks like a full card number.
+    - Don't accept an answer that contains what looks like a full card number (13 to 19 digits that pass the Luhn check). Don't save it in the draft either: the draft keeps that answer blank, so the number never reaches the disk.
 - Questions that change before submission:
     - If the clarifications file has changed since the session started, show which of the session's questions changed, or are no longer Open, and let the user review them before submitting.
 - Contradictions:

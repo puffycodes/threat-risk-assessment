@@ -451,7 +451,7 @@ function parseQuestions(text) {
   for (const x of qs) {
     const get = name => (x.fields.find(f => f[0].toLowerCase() === name) || [])[1] || '';
     x.statusText = plain(get('status'));
-    const answered = plain(get('answer')).length > 0;
+    const answered = x.fields.some(([k, v]) => /^(further )?answer$/i.test(k.trim()) && plain(v).length > 0);
     const s = x.statusText.toLowerCase();
     // fileStatus is the Status as written; status also counts an answer that
     // no re-assessment has used yet.
@@ -919,13 +919,29 @@ function submissionsHtml(b) {
     <p class="muted small">The assessor uses pending submissions at the next re-assessment, then marks them as used.</p></section>`;
 }
 
+// The answers in the clarifications file, in order: the Answer and any Further
+// answers, each with the Answered by and Answered on lines that follow it.
+function fileAnswers(q) {
+  const out = [];
+  let cur = null;
+  for (const [k, v] of q.fields) {
+    const key = k.toLowerCase();
+    if (key === 'answer' || key === 'further answer') {
+      cur = { label: k, text: v, by: '', on: '' };
+      if (plain(v)) out.push(cur);
+    } else if (cur && key === 'answered by') cur.by = plain(v);
+    else if (cur && key === 'answered on') cur.on = plain(v);
+  }
+  return out;
+}
+
 function priorAnswersHtml(b, q, includeFile) {
   const out = [];
-  const by = plain(fieldOf(q, 'answered by'));
-  const on = plain(fieldOf(q, 'answered on'));
-  if (includeFile && plain(fieldOf(q, 'answer'))) {
-    out.push(`<div class="prior"><div class="prior-h">Answer in the clarifications file${by ? ` · ${escapeHtml(by)}` : ''}${on ? `, ${escapeHtml(on)}` : ''}</div>
-      <div>${textHtml(fieldOf(q, 'answer'))}</div></div>`);
+  if (includeFile) {
+    for (const a of fileAnswers(q)) {
+      out.push(`<div class="prior"><div class="prior-h">${escapeHtml(a.label)} in the clarifications file${a.by ? ` · ${escapeHtml(a.by)}` : ''}${a.on ? `, ${escapeHtml(a.on)}` : ''}</div>
+      <div>${textHtml(a.text)}</div></div>`);
+    }
   }
   for (const p of q.pendingAnswers) {
     out.push(`<div class="prior pending"><div class="prior-h">Pending answer · ${escapeHtml(p.sub.answeredBy)}, ${escapeHtml(fmtStamp(p.sub.submitted))}

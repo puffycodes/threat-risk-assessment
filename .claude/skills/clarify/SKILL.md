@@ -58,12 +58,18 @@ For each question:
 
 After **each** batch, write the answers to the file with Edit, so stopping part-way loses nothing.
 
-**What to record.** For each answered question, replace the empty `- **Answer:**` line with the user's answer:
+**Where to write it.**
+- If the question has no answer yet, replace the empty `- **Answer:**` line.
+- If the user chose to **add to** an unused answer in the file, keep that answer and its metadata, and add `- **Further answer:** <answer>` on the line after its last `- **Answered on:**` (or after the last answer, if it has no metadata). Give the further answer its own metadata, below it.
+- If the user chose to **replace** an unused answer, replace its Answer line and its Answered by and Answered on lines.
+- Use only the field names in `docs/templates/clarifications-template.md`, so the assessor and the assessment browser read them.
+
+**What to record.** For each answered question, write the user's answer:
 - Use the option they chose, plus any detail they added, in their words.
 - Combine the parts of a split question into one answer, for example: "Card number, expiry and security code are entered on the application's own page. Not stored. Provider: (as given)."
 - Don't add interpretation, inferred facts or your own wording of what they "meant".
 
-**Answer metadata.** Directly below the Answer line, add:
+**Answer metadata.** Directly below the Answer or Further answer line, add:
 ```
 - **Answered by:** <reply from step 3>
 - **Answered on:** <today, YYYY-MM-DD>

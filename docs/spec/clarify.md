@@ -38,6 +38,7 @@ Built as a Claude Code skill (`/clarify`), not a subagent: subagents run in the 
 - Write the answers to the clarifications file
     - Write after each batch, so stopping part-way loses nothing
     - For each answered question, fill in Answer, Answered by and Answered on (today)
+    - When the user adds to an unused answer, keep it and write the new one as a Further answer below it, with its own Answered by and Answered on; when they replace it, replace the answer and its Answered by and Answered on
     - Bump the version once per interview and add a revision history row
 
 - Finish with a summary and suggest a re-assessment
@@ -93,7 +94,7 @@ With `--review-submissions`, review the pending submissions instead of interview
 
 ## Clarifications file fields
 
-The file's layout is in docs/templates/clarifications-template.md; keep it exactly. Each question gains two fields, written below Answer:
+The file's layout is in docs/templates/clarifications-template.md; keep it exactly. Each answer (Answer or Further answer) gains two fields, written below it:
 
 - **Answered by:** name or role of the person who answered
 - **Answered on:** date, YYYY-MM-DD
