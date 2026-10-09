@@ -58,7 +58,14 @@ If an output file already exists, read it first and update it rather than overwr
    - Draw the target architecture as an ASCII diagram, labelling elements with their controls.
    - Define the zones and trust boundaries.
    - Define the allowed data flows (F-) with protocols and ports. State that everything else is denied.
-   - Write one component subsection per area. Each lists its controls (SC-) and the risks (R-) it treats.
+   - Write the four sections that cut across components:
+     - **Data classification and handling:** one row for each data type in TRA §2.2 and each data asset in TRA §4. Take the classification from the asset's confidentiality rating, or from the organization's scheme if the TRA gives one.
+     - **Identity and access:** one row for each group of people or kind of account, including service accounts and API keys.
+     - **Cryptography and secrets:** where encryption is used, and every secret in the TRA's assets.
+     - **Logging and monitoring:** one row for each log source. Take a retention period from a compliance requirement only if the TRA says the framework applies (§2.6).
+
+     In each cell, give the current state with a citation, a recommendation marked "(R)", or "TBD (Q-nn)" when it depends on an open question. Don't fill a gap with a guess. If the TRA lists an item that its treatment plan doesn't cover (for example a secret with no treatment), still list it, say it has no treatment, and report it as a gap in the TRA.
+   - Write one component subsection per area. Each lists its controls (SC-) and the risks (R-) it treats. Refer to the four cross-cutting sections instead of repeating them.
    - Record design decisions (DD-) wherever the TRA leaves a real choice: options, recommendation, rationale, and a decision owner of TBD.
    - Take the residual risk position from TRA §10, including any conditions it depends on.
    - List open design questions, using the clarification question numbers (Q-).
@@ -69,6 +76,8 @@ If an output file already exists, read it first and update it rather than overwr
    - Every TRA §8 risk appears in the risk coverage table, with current and residual ratings that match the TRA.
    - The risk coverage table matches the "Risks treated" column, in both directions.
    - Every SC- ID referenced in the design exists in the control list.
+   - Every data type in TRA §2.2 and every data asset in TRA §4 appears in the data classification section.
+   - Every secret in the TRA's assets appears in the cryptography and secrets section.
    - The summary counts by priority and by status match the control list.
    - Every existing TRA control (C-) appears in the existing-controls table.
 

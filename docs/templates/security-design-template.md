@@ -73,7 +73,7 @@
                        [Admin jump host SC-01, SC-02] (recommended)
 ```
 
-[Notes on the diagram: which zones or elements are recommendations, and any that depend on open design questions (§10).]
+[Notes on the diagram: which zones or elements are recommendations, and any that depend on open design questions (§14).]
 
 ---
 
@@ -103,25 +103,72 @@
 
 ---
 
-## 7. Component design
+> Sections 7 to 10 describe the design across all components. In each cell, give the current state with a citation, a recommendation marked "(R)", or "TBD (Q-nn)" when it depends on an open question. Don't invent values. Where the TRA lists an item but its treatment plan doesn't cover it, say so in the row and report it as a gap in the TRA.
 
-> One subsection per component or area. Each ends with the controls it implements and the TRA risks it treats.
+## 7. Data classification and handling
 
-### 7.1 [Component, e.g., Internet boundary]
+> One row per data type in TRA §2.2 and the data assets in TRA §4. Take the classification from the asset's confidentiality rating, or from the organization's scheme if the TRA gives one.
+
+| Data | Asset | Classification | Where stored | At rest | In transit | Retention | Owner | Controls |
+|---|---|---|---|---|---|---|---|---|
+| [Customer records] | [A-01] | [Confidential (C 4)] | [Database server] | [Disk encryption (R)] | [TLS (F-03)] | [TBD (Q-07)] | [Business owner] | [SC-07] |
+
+---
+
+## 8. Identity and access
+
+> One row per group of people or kind of account, including service accounts and API keys.
+
+| Who or what | Authenticates to | Method | Access granted | Provisioning and review | Controls |
+|---|---|---|---|---|---|
+| [Administrators] | [Jump host] | [Password + hardware key] | [Web server and database server only] | [Named accounts; reviewed every 6 months (R)] | [SC-01, SC-02] |
+| [Application service account] | [Database] | [Password] | [Read/write on its own tables] | [TBD (Q-05)] | [SC-07] |
+
+---
+
+## 9. Cryptography and secrets
+
+> List every secret in the TRA's assets, including those with no treatment in the TRA.
+
+| Where encryption is used | Protocol or algorithm | Keys or certificates | Renewal or rotation | Controls |
+|---|---|---|---|---|
+| [Internet → WAF (F-01)] | [TLS 1.2 and 1.3] | [Public certificate] | [Automatic renewal (R)] | [SC-05] |
+
+| Secret | Asset | Stored in | Who or what can read it | Rotation | Controls |
+|---|---|---|---|---|---|
+| [Database credential] | [A-04] | [Secrets manager (R)] | [Application only] | [Yearly and on suspected compromise (R)] | [SC-08] |
+
+---
+
+## 10. Logging and monitoring
+
+> One row per log source. Take the retention from a compliance requirement only if the TRA says the framework applies (§2.6).
+
+| Source | Events logged | Destination | Retention | Alerts | Reviewed by | Controls |
+|---|---|---|---|---|---|---|
+| [Jump host] | [Logins, failures, sessions] | [Central log system (F-05)] | [TBD (Q-09)] | [Login from a new source (R)] | [TBD] | [SC-09] |
+
+---
+
+## 11. Component design
+
+> One subsection per component or area. Each ends with the controls it implements and the TRA risks it treats. Don't repeat what sections 7 to 10 already say; refer to them.
+
+### 11.1 [Component, e.g., Internet boundary]
 
 - [Design point]
 - [Design point]
 
 **Controls:** [SC-05, SC-06] **Risks:** [R-02]
 
-### 7.2 [Component, e.g., Administrative access]
+### 11.2 [Component, e.g., Administrative access]
 
 - [Design point]
 - [Design point]
 
 **Controls:** [SC-01, SC-02] **Risks:** [R-01]
 
-### 7.3 [Component, e.g., Data store]
+### 11.3 [Component, e.g., Data store]
 
 - [Design point]
 - [Design point]
@@ -130,7 +177,7 @@
 
 ---
 
-## 8. Design decisions
+## 12. Design decisions
 
 > Record a decision wherever the TRA leaves a real choice. Decision owners are humans; leave as TBD.
 
@@ -140,7 +187,7 @@
 
 ---
 
-## 9. Residual risk if implemented
+## 13. Residual risk if implemented
 
 > Take this from TRA §9 and §10. Do not re-score.
 
@@ -155,17 +202,17 @@
 
 ---
 
-## 10. Open design questions
+## 14. Open design questions
 
 > Use the question numbers from the clarifications file.
 
 | Question | Design element affected |
 |---|---|
-| [Q-04: Is cardholder data stored?] | [§5 zones; §6 F-03; SC-07] |
+| [Q-04: Is cardholder data stored?] | [§5 zones; §6 F-03; §7; SC-07] |
 
 ---
 
-## 11. Assumptions
+## 15. Assumptions
 
 - [Assumption inherited from TRA §2.7]
 - [Assumption added by this design]: (design)

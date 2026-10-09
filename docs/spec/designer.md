@@ -27,11 +27,15 @@
 - 4. Target architecture diagram, with each element labelled with its controls (SC-)
 - 5. Security zones and trust boundaries
 - 6. Data flows (F-): from, to, protocol and port, data, controls; everything not listed is denied
-- 7. Component design: one subsection per component, each listing its controls (SC-) and the risks (R-) it treats
-- 8. Design decisions (DD-): options considered, recommendation, rationale, decision owner
-- 9. Residual risk if implemented, taken from the TRA
-- 10. Open design questions, using the clarification question numbers (Q-)
-- 11. Assumptions inherited from the TRA, and any added by the design
+- 7. Data classification and handling: each data type and data asset, with classification, where stored, protection at rest and in transit, retention, owner, controls
+- 8. Identity and access: each group of people or kind of account (including service accounts and API keys), with what it authenticates to, method, access granted, provisioning and review, controls
+- 9. Cryptography and secrets: where encryption is used (protocol, keys or certificates, renewal), and every secret in the TRA's assets (where stored, who or what can read it, rotation)
+- 10. Logging and monitoring: each log source, with events logged, destination, retention, alerts, who reviews them, controls
+- 11. Component design: one subsection per component, each listing its controls (SC-) and the risks (R-) it treats; refers to sections 7 to 10 instead of repeating them
+- 12. Design decisions (DD-): options considered, recommendation, rationale, decision owner
+- 13. Residual risk if implemented, taken from the TRA
+- 14. Open design questions, using the clarification question numbers (Q-)
+- 15. Assumptions inherited from the TRA, and any added by the design
 
 ### Security controls contents
 
@@ -76,6 +80,8 @@
 
 - Don't invent facts; describe the current state only from the TRA, the clarification answers and the source material, with citations
 - Mark recommended design elements as recommendations, not as existing
+- In sections 7 to 10, each value is the current state with a citation, a recommendation marked (R), or TBD with the open question number (Q-)
+- If the TRA lists an item (such as a secret or a data type) that its treatment plan doesn't cover, still list it, say it has no treatment, and report it as a gap in the TRA
 - Use TBD for owners and anything else that can't be determined
 - List design choices that depend on unanswered clarification questions under Open design questions
 - Set Status to Draft and the date to today
@@ -98,6 +104,8 @@
 - Every TRA §8 risk appears in the risk coverage table, with ratings that match the TRA
 - The risk coverage table matches the Risks treated column in the control list
 - Every SC- ID in the design exists in the control list
+- Every data type in TRA §2.2 and every data asset in TRA §4 appears in section 7
+- Every secret in the TRA's assets appears in section 9
 - Summary counts match the control list
 - Every existing TRA control (C-) appears in the existing controls table
 

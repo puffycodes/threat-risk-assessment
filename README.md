@@ -301,6 +301,10 @@ The designer needs a finished TRA. If there's no TRA for the subject, it stops a
 - a target architecture diagram
 - security zones and trust boundaries
 - allowed data flows (F-); everything else is denied
+- data classification and handling
+- identity and access, including service accounts and API keys
+- cryptography and secrets
+- logging and monitoring
 - component designs
 - design decisions (DD-) that need an owner
 - residual risk if implemented
