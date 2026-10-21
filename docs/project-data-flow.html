@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TRA Workspace Data Flows</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one wide diagram on top, then the flow register and trust boundaries as reference tables. */
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --fg: #1d2430; --muted: #66707f; --line: #d9dde4;
+  --accent: #c26a00; --accent-soft: #fdf1e2;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #13171d; --panel: #1b2028; --fg: #e3e7ee; --muted: #8e98a8; --line: #2d3440;
+  --accent: #f0a23c; --accent-soft: #3a2a14; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #13171d; --panel: #1b2028; --fg: #e3e7ee; --muted: #8e98a8; --line: #2d3440;
+  --accent: #f0a23c; --accent-soft: #3a2a14; color-scheme: dark }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.55 var(--sans); }
+main { max-width: 1240px; margin: 0 auto; padding-block: 32px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 28px; }
+header { display: grid; gap: 6px; }
+.eyebrow { font: 500 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-size: 28px; font-weight: 600; margin: 0; text-wrap: balance; }
+h2 { font-size: 18px; font-weight: 600; margin: 0 0 10px; text-wrap: balance; }
+p { margin: 0; max-width: 72ch; }
+code, .mono { font-family: var(--mono); font-size: .9em; }
+figure { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+.scroll { overflow-x: auto; }
+figure svg { display: block; width: 100%; min-width: 900px; height: auto; color: var(--fg); font-family: var(--sans); }
+figcaption { margin-top: 12px; color: var(--muted); font-size: 13.5px; max-width: 90ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 12px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend svg { width: 34px; height: 18px; min-width: 0; }
+svg .ext { fill: var(--panel); stroke: var(--fg); stroke-width: 1.4; }
+svg .proc { fill: var(--panel); stroke: var(--fg); stroke-width: 1.4; }
+svg .storebg { fill: var(--panel); }
+svg .store { fill: none; stroke: var(--fg); stroke-width: 1.4; }
+svg .nl { fill: var(--fg); font-size: 13px; font-weight: 600; }
+svg .ns { fill: var(--muted); font-size: 11px; }
+svg .ns.mono { font-family: var(--mono); font-size: 10.5px; }
+svg .sid { fill: var(--muted); font: 600 11px var(--mono); }
+svg .bl { fill: var(--muted); font: 500 10.5px var(--mono); letter-spacing: .08em; }
+svg .bl.acc { fill: var(--accent); }
+svg .badge circle { fill: var(--panel); stroke: var(--fg); stroke-width: 1.2; }
+svg .badge text { fill: var(--fg); font: 600 10.5px var(--mono); }
+svg .badge.acc circle { fill: var(--accent-soft); stroke: var(--accent); }
+svg .badge.acc text { fill: var(--accent); }
+section { display: grid; gap: 4px; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+th { font: 500 11.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--bg); }
+tr:last-child td { border-bottom: 0; }
+td.n { font: 600 13px var(--mono); font-variant-numeric: tabular-nums; width: 2.5em; }
+td.ft { white-space: nowrap; font-size: 13.5px; }
+tr.group td { background: var(--bg); font-weight: 600; font-size: 13px; color: var(--muted); padding-block: 6px; }
+tr.cross td.n { color: var(--accent); }
+.pill { display: inline-block; font: 500 11px var(--mono); padding: 1px 7px; border-radius: 999px; border: 1px solid var(--accent); color: var(--accent); background: var(--accent-soft); margin-left: 6px; white-space: nowrap; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.cols > div { min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.cols h3 { margin: 0; font-size: 15px; }
+.cols p { font-size: 14px; color: var(--fg); }
+</style>
+
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">Level 1 data flow diagram · threat-risk-assessment repo · as of b4c07ad</div>
+    <h1>TRA Workspace Data Flows</h1>
+    <p>Where scenario data, assessments and answers move between people, the Claude Code agents, the files on disk and the assessment browser. The numbered flows are described in the register below.</p>
+  </header>
+
+  <figure>
+    <div class="scroll">
+<svg viewBox="0 0 1240 880" role="img" aria-label="Data flow diagram: the analyst and four Claude Code processes read and write Markdown files on local disk; only the Claude Code session talks to the internet; the assessment browser reads the same files and writes only answer drafts and submissions.">
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--fg)"/></marker>
+<marker id="ara" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"/></marker>
+<marker id="arm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker>
+</defs>
+<line x1="172" y1="90" x2="508" y2="90" style="stroke:var(--accent)" stroke-width="1.5" stroke-dasharray="2 4"/>
+<text x="508" y="84" text-anchor="end" class="bl acc">INTERNET</text>
+<rect x="172" y="108" width="336" height="700" rx="10" fill="none" style="stroke:var(--muted)" stroke-width="1.2" stroke-dasharray="6 5"/>
+<text x="184" y="126" class="bl">CLAUDE CODE SESSION</text>
+<rect x="562" y="108" width="290" height="752" rx="10" fill="none" style="stroke:var(--muted)" stroke-width="1.2" stroke-dasharray="6 5"/>
+<text x="574" y="126" class="bl">WORKSPACE FILES (LOCAL DISK)</text>
+<rect x="930" y="280" width="270" height="420" rx="10" fill="none" style="stroke:var(--muted)" stroke-width="1.2" stroke-dasharray="6 5"/>
+<text x="942" y="298" class="bl">ASSESSMENT BROWSER · 127.0.0.1:8765</text>
+<polyline points="80.0,418.0 80.0,100.0 540.0,100.0 540.0,240.0 595.0,240.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-end="url(#ar)"/>
+<polyline points="140.0,470.0 172.0,470.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<polyline points="140.0,427.7 250.0,412.5" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<polyline points="262.0,108.0 262.0,70.0" fill="none" style="stroke:var(--accent)" stroke-width="1.6" stroke-opacity="1" marker-start="url(#ara)" marker-end="url(#ara)"/>
+<polyline points="420.0,108.0 420.0,70.0" fill="none" style="stroke:var(--accent)" stroke-width="1.6" stroke-opacity="1" marker-start="url(#ara)" marker-end="url(#ara)"/>
+<polyline points="595.0,160.0 430.0,206.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-end="url(#ar)"/>
+<polyline points="595.0,240.0 430.0,216.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-end="url(#ar)"/>
+<polyline points="430.0,226.0 595.0,320.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-end="url(#ar)"/>
+<polyline points="430.0,234.0 595.0,400.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<polyline points="595.0,490.0 430.0,238.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<polyline points="595.0,160.0 430.0,554.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-end="url(#ar)"/>
+<polyline points="595.0,320.0 430.0,564.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-end="url(#ar)"/>
+<polyline points="595.0,400.0 430.0,574.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-end="url(#ar)"/>
+<polyline points="430.0,582.0 595.0,610.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-end="url(#ar)"/>
+<polyline points="595.0,320.0 430.0,714.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-end="url(#ar)"/>
+<polyline points="595.0,400.0 430.0,724.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-end="url(#ar)"/>
+<polyline points="430.0,736.0 595.0,730.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-end="url(#ar)"/>
+<polyline points="805.0,730.0 836.0,730.0 836.0,250.0 805.0,250.0" fill="none" style="stroke:var(--muted)" stroke-width="1.1" stroke-opacity="0.7" stroke-dasharray="5 4" marker-end="url(#arm)"/>
+<polyline points="430.0,400.0 595.0,400.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<polyline points="595.0,320.0 430.0,388.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-end="url(#ar)"/>
+<polyline points="595.0,490.0 430.0,412.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-end="url(#ar)"/>
+<polyline points="852.0,330.0 960.0,330.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-end="url(#ar)"/>
+<polyline points="1025.0,363.0 1025.0,577.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-end="url(#ar)"/>
+<polyline points="1095.0,577.0 1095.0,363.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-end="url(#ar)"/>
+<polyline points="960.0,352.0 900.0,352.0 900.0,490.0 805.0,490.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-end="url(#ar)"/>
+<polyline points="1060.0,805.0 1060.0,623.0" fill="none" style="stroke:var(--fg)" stroke-width="1.1" stroke-opacity="0.7" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<rect x="20.0" y="418.0" width="120" height="64" class="ext"/>
+<text x="80" y="447" text-anchor="middle" class="nl">Analyst</text>
+<text x="80" y="463" text-anchor="middle" class="ns">Claude Code user</text>
+<rect x="192.0" y="20.0" width="140" height="50" class="ext"/>
+<text x="262" y="42" text-anchor="middle" class="nl">Anthropic API</text>
+<text x="262" y="58" text-anchor="middle" class="ns">model inference</text>
+<rect x="345.0" y="20.0" width="150" height="50" class="ext"/>
+<text x="420" y="42" text-anchor="middle" class="nl">Public web</text>
+<text x="420" y="58" text-anchor="middle" class="ns">CVEs, threat intel</text>
+<rect x="975.0" y="805.0" width="170" height="50" class="ext"/>
+<text x="1060" y="827" text-anchor="middle" class="nl">Answerer</text>
+<text x="1060" y="843" text-anchor="middle" class="ns">no Claude Code</text>
+<rect x="250.0" y="197.0" width="180" height="46" rx="23.0" class="proc"/>
+<text x="340" y="218" text-anchor="middle" class="nl">assessor</text>
+<text x="340" y="233" text-anchor="middle" class="ns">agent</text>
+<rect x="250.0" y="377.0" width="180" height="46" rx="23.0" class="proc"/>
+<text x="340" y="398" text-anchor="middle" class="nl">/clarify</text>
+<text x="340" y="413" text-anchor="middle" class="ns">skill</text>
+<rect x="250.0" y="547.0" width="180" height="46" rx="23.0" class="proc"/>
+<text x="340" y="568" text-anchor="middle" class="nl">designer</text>
+<text x="340" y="583" text-anchor="middle" class="ns">agent · Sonnet</text>
+<rect x="250.0" y="707.0" width="180" height="46" rx="23.0" class="proc"/>
+<text x="340" y="728" text-anchor="middle" class="nl">summarizer</text>
+<text x="340" y="743" text-anchor="middle" class="ns">agent · Sonnet</text>
+<rect x="960.0" y="317.0" width="200" height="46" rx="23.0" class="proc"/>
+<text x="1060" y="338" text-anchor="middle" class="nl">serve.py</text>
+<text x="1060" y="353" text-anchor="middle" class="ns">local HTTP server</text>
+<rect x="960.0" y="577.0" width="200" height="46" rx="23.0" class="proc"/>
+<text x="1060" y="598" text-anchor="middle" class="nl">browser page</text>
+<text x="1060" y="613" text-anchor="middle" class="ns">app.js</text>
+<rect x="595.0" y="140.0" width="210" height="40" class="storebg"/>
+<path d="M805.0,140.0 H595.0 V180.0 H805.0 M629.0,140.0 V180.0" class="store"/>
+<text x="612.0" y="164" text-anchor="middle" class="sid">D1</text>
+<text x="639.0" y="157" class="nl">process + templates</text>
+<text x="639.0" y="172" class="ns mono">docs/</text>
+<rect x="595.0" y="220.0" width="210" height="40" class="storebg"/>
+<path d="M805.0,220.0 H595.0 V260.0 H805.0 M629.0,220.0 V260.0" class="store"/>
+<text x="612.0" y="244" text-anchor="middle" class="sid">D2</text>
+<text x="639.0" y="237" class="nl">description.md</text>
+<text x="639.0" y="252" class="ns mono">scenario/&lt;s&gt;/</text>
+<rect x="595.0" y="300.0" width="210" height="40" class="storebg"/>
+<path d="M805.0,300.0 H595.0 V340.0 H805.0 M629.0,300.0 V340.0" class="store"/>
+<text x="612.0" y="324" text-anchor="middle" class="sid">D3</text>
+<text x="639.0" y="317" class="nl">TRA</text>
+<text x="639.0" y="332" class="ns mono">output/&lt;s&gt;/</text>
+<rect x="595.0" y="380.0" width="210" height="40" class="storebg"/>
+<path d="M805.0,380.0 H595.0 V420.0 H805.0 M629.0,380.0 V420.0" class="store"/>
+<text x="612.0" y="404" text-anchor="middle" class="sid">D4</text>
+<text x="639.0" y="397" class="nl">clarifications</text>
+<text x="639.0" y="412" class="ns mono">output/&lt;s&gt;/</text>
+<rect x="595.0" y="470.0" width="210" height="40" class="storebg"/>
+<path d="M805.0,470.0 H595.0 V510.0 H805.0 M629.0,470.0 V510.0" class="store"/>
+<text x="612.0" y="494" text-anchor="middle" class="sid">D5</text>
+<text x="639.0" y="487" class="nl">draft + submissions</text>
+<text x="639.0" y="502" class="ns mono">output/&lt;s&gt;/answers/</text>
+<rect x="595.0" y="590.0" width="210" height="40" class="storebg"/>
+<path d="M805.0,590.0 H595.0 V630.0 H805.0 M629.0,590.0 V630.0" class="store"/>
+<text x="612.0" y="614" text-anchor="middle" class="sid">D6</text>
+<text x="639.0" y="607" class="nl">design + controls</text>
+<text x="639.0" y="622" class="ns mono">output/&lt;s&gt;/</text>
+<rect x="595.0" y="710.0" width="210" height="40" class="storebg"/>
+<path d="M805.0,710.0 H595.0 V750.0 H805.0 M629.0,710.0 V750.0" class="store"/>
+<text x="612.0" y="734" text-anchor="middle" class="sid">D7</text>
+<text x="639.0" y="727" class="nl">system summary v&lt;n&gt;</text>
+<text x="639.0" y="742" class="ns mono">output/&lt;s&gt;/</text>
+<g class="badge"><circle cx="310.0" cy="100.0" r="9.5"/><text x="310.0" y="103.8" text-anchor="middle">1</text></g>
+<g class="badge"><circle cx="156.0" cy="470.0" r="9.5"/><text x="156.0" y="473.8" text-anchor="middle">2</text></g>
+<g class="badge"><circle cx="195.0" cy="420.1" r="9.5"/><text x="195.0" y="423.9" text-anchor="middle">15</text></g>
+<g class="badge acc"><circle cx="262.0" cy="89.0" r="9.5"/><text x="262.0" y="92.8" text-anchor="middle">3</text></g>
+<g class="badge acc"><circle cx="420.0" cy="89.0" r="9.5"/><text x="420.0" y="92.8" text-anchor="middle">4</text></g>
+<g class="badge"><circle cx="512.5" cy="183.0" r="9.5"/><text x="512.5" y="186.8" text-anchor="middle">5</text></g>
+<g class="badge"><circle cx="512.5" cy="228.0" r="9.5"/><text x="512.5" y="231.8" text-anchor="middle">6</text></g>
+<g class="badge"><circle cx="512.5" cy="273.0" r="9.5"/><text x="512.5" y="276.8" text-anchor="middle">7</text></g>
+<g class="badge"><circle cx="512.5" cy="317.0" r="9.5"/><text x="512.5" y="320.8" text-anchor="middle">8</text></g>
+<g class="badge"><circle cx="499.3" cy="343.8" r="9.5"/><text x="499.3" y="347.6" text-anchor="middle">9</text></g>
+<g class="badge"><circle cx="499.3" cy="388.5" r="9.5"/><text x="499.3" y="392.3" text-anchor="middle">5</text></g>
+<g class="badge"><circle cx="499.3" cy="461.5" r="9.5"/><text x="499.3" y="465.3" text-anchor="middle">10</text></g>
+<g class="badge"><circle cx="512.5" cy="487.0" r="9.5"/><text x="512.5" y="490.8" text-anchor="middle">10</text></g>
+<g class="badge"><circle cx="512.5" cy="596.0" r="9.5"/><text x="512.5" y="599.8" text-anchor="middle">11</text></g>
+<g class="badge"><circle cx="512.5" cy="517.0" r="9.5"/><text x="512.5" y="520.8" text-anchor="middle">12</text></g>
+<g class="badge"><circle cx="512.5" cy="562.0" r="9.5"/><text x="512.5" y="565.8" text-anchor="middle">12</text></g>
+<g class="badge"><circle cx="512.5" cy="733.0" r="9.5"/><text x="512.5" y="736.8" text-anchor="middle">13</text></g>
+<g class="badge"><circle cx="836.0" cy="451.6" r="9.5"/><text x="836.0" y="455.4" text-anchor="middle">14</text></g>
+<g class="badge"><circle cx="472.9" cy="400.0" r="9.5"/><text x="472.9" y="403.8" text-anchor="middle">16</text></g>
+<g class="badge"><circle cx="486.1" cy="364.9" r="9.5"/><text x="486.1" y="368.7" text-anchor="middle">17</text></g>
+<g class="badge"><circle cx="525.7" cy="457.2" r="9.5"/><text x="525.7" y="461.0" text-anchor="middle">17</text></g>
+<g class="badge"><circle cx="906.0" cy="330.0" r="9.5"/><text x="906.0" y="333.8" text-anchor="middle">18</text></g>
+<g class="badge"><circle cx="1025.0" cy="470.0" r="9.5"/><text x="1025.0" y="473.8" text-anchor="middle">19</text></g>
+<g class="badge"><circle cx="1095.0" cy="470.0" r="9.5"/><text x="1095.0" y="473.8" text-anchor="middle">20</text></g>
+<g class="badge"><circle cx="900.0" cy="421.0" r="9.5"/><text x="900.0" y="424.8" text-anchor="middle">21</text></g>
+<g class="badge"><circle cx="1060.0" cy="714.0" r="9.5"/><text x="1060.0" y="717.8" text-anchor="middle">22</text></g>
+</svg>
+    </div>
+    <div class="legend" aria-hidden="true">
+      <span><svg viewBox="0 0 34 18"><rect x="2" y="2" width="30" height="14" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>External entity</span>
+      <span><svg viewBox="0 0 34 18"><rect x="2" y="2" width="30" height="14" rx="7" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>Process</span>
+      <span><svg viewBox="0 0 34 18"><path d="M32,2 H2 V16 H32 M9,2 V16" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>Data store</span>
+      <span><svg viewBox="0 0 34 18"><rect x="2" y="2" width="30" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 3"/></svg>Trust boundary</span>
+      <span><svg viewBox="0 0 34 18"><line x1="2" y1="9" x2="32" y2="9" style="stroke:var(--accent)" stroke-width="2"/></svg>Leaves the machine</span>
+      <span><svg viewBox="0 0 34 18"><line x1="2" y1="9" x2="32" y2="9" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 4"/></svg>Manual copy</span>
+    </div>
+    <figcaption>All processing and storage is local except flows 3 and 4. Flow 3 carries the contents of whatever the agents read, scenario details included, to the model provider. The browser server is bound to loopback and writes only to D5.</figcaption>
+  </figure>
+
+  <section>
+    <h2>Flow register</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th>From → To</th><th>Data</th><th>Notes and existing controls</th></tr></thead>
+        <tbody>
+          <tr class="group"><td colspan="4">People and the Claude Code session</td></tr>
+          <tr><td class="n">1</td><td class="ft">Analyst → D2</td><td>System description of the subject, written by hand</td><td>May describe real systems; <code>scenario/</code> and <code>output/</code> are git-ignored. The analyst can also hand-edit answers into D4.</td></tr>
+          <tr><td class="n">2</td><td class="ft">Analyst ⇄ Claude Code</td><td>Task requests and path overrides; agent summaries back</td><td>Agents run in their own context and report only a short summary.</td></tr>
+          <tr class="cross"><td class="n">3</td><td class="ft">Claude Code ⇄ Anthropic API <span class="pill">off-machine</span></td><td>Prompts containing the contents of every file the agents and skill read (D1–D5); completions back</td><td>The only path by which system details leave the machine. Covered by the Claude Code account's data terms, not by anything in this repo.</td></tr>
+          <tr class="cross"><td class="n">4</td><td class="ft">Claude Code ⇄ Public web <span class="pill">off-machine</span></td><td>WebSearch / WebFetch queries for CVEs, end-of-life dates, threat intel, standards (assessor, designer)</td><td>Agent instructions forbid putting system details in queries. Enforced by the prompt only. The summarizer has no web tools.</td></tr>
+          <tr class="group"><td colspan="4">assessor</td></tr>
+          <tr><td class="n">5</td><td class="ft">D1 → assessor, designer</td><td>11-step TRA process and document templates</td><td>Read-only for agents; changes go through git.</td></tr>
+          <tr><td class="n">6</td><td class="ft">D2 → assessor</td><td>Facts about the subject</td><td>Cited by file and line; anything else becomes an AS- assumption.</td></tr>
+          <tr><td class="n">7</td><td class="ft">assessor → D3</td><td>Threat risk assessment</td><td>Updated in place; version and revision history bumped each run.</td></tr>
+          <tr><td class="n">8</td><td class="ft">assessor ⇄ D4</td><td>Writes questions (Q-) and statuses; reads answers</td><td>Appendix B of the TRA must match D4.</td></tr>
+          <tr><td class="n">9</td><td class="ft">D5 ⇄ assessor</td><td>Reads Pending submissions; writes their Status row only</td><td>Draft and withdrawn submissions ignored. Marks each used one “Used in TRA version X.Y”.</td></tr>
+          <tr class="group"><td colspan="4">designer and summarizer</td></tr>
+          <tr><td class="n">10</td><td class="ft">D3, D4 → designer</td><td>Risks, controls, treatment plan, answers</td><td>Stops if no TRA exists. Never re-scores risks.</td></tr>
+          <tr><td class="n">11</td><td class="ft">designer → D6</td><td>Security design and control list (SC-)</td><td>SC- IDs are never reused.</td></tr>
+          <tr><td class="n">12</td><td class="ft">D3, D4 → summarizer</td><td>Assessment and answers, plus the source files the TRA cites (such as D2)</td><td>Does not read D6.</td></tr>
+          <tr><td class="n">13</td><td class="ft">summarizer → D7</td><td>System description, items labelled Given or Assumed</td><td>New file each run; refuses to overwrite.</td></tr>
+          <tr><td class="n">14</td><td class="ft">D7 ⇢ D2</td><td>Summary copied by the analyst into a new <code>scenario/&lt;new-subject&gt;/</code></td><td>Manual. Starts a fresh assessment under a new slug.</td></tr>
+          <tr class="group"><td colspan="4">/clarify skill</td></tr>
+          <tr><td class="n">15</td><td class="ft">Analyst ⇄ /clarify</td><td>Open questions out; answers and the answerer's name back</td><td>Interactive interview. Secrets such as passwords are not recorded.</td></tr>
+          <tr><td class="n">16</td><td class="ft">/clarify ⇄ D4</td><td>Reads open questions; writes answers with Answered by / on</td><td>Never changes a question's Status. Saved after each batch.</td></tr>
+          <tr><td class="n">17</td><td class="ft">D3, D5 → /clarify</td><td>TRA facts to check for contradictions; pending browser submissions</td><td><code>--review-submissions</code> reads only and writes nothing.</td></tr>
+          <tr class="group"><td colspan="4">Assessment browser</td></tr>
+          <tr><td class="n">18</td><td class="ft">D2–D7 → serve.py</td><td>Every <code>.md</code> under <code>scenario/</code> and <code>output/</code></td><td>Serves nothing outside those two folders.</td></tr>
+          <tr><td class="n">19</td><td class="ft">serve.py → page</td><td><code>GET /api/index</code>, <code>/api/doc</code>, <code>/api/draft</code>; the page polls every 4 s</td><td>Listens on 127.0.0.1 only. Host header checked against DNS rebinding. Page loads nothing from the internet.</td></tr>
+          <tr><td class="n">20</td><td class="ft">page → serve.py</td><td><code>POST /api/draft</code>, <code>/cancel</code>, <code>/submit</code>, <code>/withdraw</code> (JSON)</td><td>Requires the same Origin and a per-start token embedded in <code>index.html</code>. Body size capped.</td></tr>
+          <tr><td class="n">21</td><td class="ft">serve.py → D5</td><td><code>draft.md</code>, <code>answers-&lt;YYYYMMDD-HHMMSS&gt;.md</code>, withdrawal status</td><td>Written through a temp file. Rejects answers that contain a Luhn-valid card number. Never touches D3 or D4.</td></tr>
+          <tr><td class="n">22</td><td class="ft">Answerer ⇄ page</td><td>Answers, “Don't know”, and the answerer's name or role</td><td>For people without Claude Code. The page warns on text that looks like a password, key or token.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Trust boundaries</h2>
+    <div class="cols">
+      <div><h3>Internet</h3><p>Crossed only by flows 3 and 4, both from the Claude Code session. Nothing in the assessment browser or on disk talks to the network directly.</p></div>
+      <div><h3>Claude Code session</h3><p>Agents can only read, search and write files, and search the web. They have no shell. The assessor runs on the session's model, the designer and summarizer on Sonnet.</p></div>
+      <div><h3>Workspace files</h3><p>Plain Markdown on local disk with no access control beyond the OS account. D2–D7 are git-ignored and need a separate backup.</p></div>
+      <div><h3>Assessment browser</h3><p>Loopback HTTP with no authentication. Any local process can read documents through it. Writes need the page's token and Origin.</p></div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

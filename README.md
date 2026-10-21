@@ -11,6 +11,8 @@ A workspace for producing threat risk assessments (TRAs), and the security desig
 
 To read the results, the [assessment browser](#browsing-the-assessments) shows every subject's documents in a web browser. It's a small local web server and doesn't use any agent or skill.
 
+For how data moves between people, the agents, the files and the browser, and which flows leave your machine, open the [data flow diagram](docs/project-data-flow.html) in a web browser.
+
 ## Contents
 
 - [Repository layout](#repository-layout)
@@ -42,6 +44,7 @@ To read the results, the [assessment browser](#browsing-the-assessments) shows e
 │       └── SKILL.md                         # /clarify skill (built from docs/spec/clarify.md)
 ├── docs/
 │   ├── threat-risk-assessment-process.md    # the 11-step TRA process the assessor follows
+│   ├── project-data-flow.html               # data flow diagram of this workspace (open in a browser)
 │   ├── templates/
 │   │   ├── threat-risk-assessment-template.md  # the TRA document template
 │   │   ├── clarifications-template.md          # the clarifications file layout
@@ -56,6 +59,9 @@ To read the results, the [assessment browser](#browsing-the-assessments) shows e
 ├── tools/assessment-browser/
 │   ├── serve.py                             # assessment browser: local web server
 │   └── static/                              # the browser app (HTML, JavaScript, CSS)
+├── tools/data-flow-diagram/
+│   ├── generate.py                          # writes docs/project-data-flow.html
+│   └── template.html                        # the page around the diagram, with the flow register
 ├── scenario/<subject>/                      # input: one folder per subject   (not in git)
 │   └── description.md
 └── output/<subject>/                        # generated documents             (not in git)
@@ -548,6 +554,14 @@ The browser is code, not an agent, but it follows the same pattern: `docs/spec/a
 1. Edit the spec.
 2. Ask Claude Code to update the browser to match, for example: `update the assessment browser to match docs/spec/assessment-browser/features.md`.
 3. Run it against the subjects in `output/` and check the pages, then commit the spec and the code together.
+
+### Updating the data flow diagram
+
+When a change adds, removes or alters a data flow, for example a new agent, a new browser endpoint or web access for an agent that had none, update the [data flow diagram](docs/project-data-flow.html):
+
+1. Edit the nodes and edges in `tools/data-flow-diagram/generate.py`, and the flow register and trust boundary notes in `tools/data-flow-diagram/template.html`. Keep the flow numbers in both the same.
+2. Run `python tools/data-flow-diagram/generate.py` from the repository root. It needs only Python 3, and it overwrites `docs/project-data-flow.html`.
+3. Open the page and check that no line or flow number overlaps another, then commit the generator, the template and the page together.
 
 ---
 
