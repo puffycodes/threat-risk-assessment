@@ -19,11 +19,14 @@ checked, and the script fails rather than leave a half-converted skill.
 Each build is stamped with a version taken from git (see source_version),
 and gets a manifest of every file with its SHA-256. --check compares skills
 installed elsewhere with a fresh build and says whether each is current.
+A build refuses to run when the sources have uncommitted changes, or git
+isn't available, since it couldn't be traced to a commit; --allow-dirty
+builds anyway, marked -dirty or unknown.
 
 See "Agent vs Skill" in docs/design-considerations.md for the reasoning.
 Uses only the Python standard library, and git for the version.
 
-    python tools/agent-to-skill/convert.py [--target all|claude-code|cursor|copilot|generic] [--out dist]
+    python tools/agent-to-skill/convert.py [--target all|claude-code|cursor|copilot|generic] [--out dist] [--allow-dirty]
     python tools/agent-to-skill/convert.py --target <target> --check <installed skills folder>
 
 Exit status: 0 on success (or, with --check, all current); 1 if --check
@@ -331,7 +334,8 @@ def git(*args):
         result = subprocess.run(["git", "-C", str(ROOT), *args], capture_output=True, text=True, check=False)
     except OSError:
         return None
-    return result.stdout.strip() if result.returncode == 0 else None
+    # Strip only the end: git status --porcelain starts a line with a space.
+    return result.stdout.rstrip() if result.returncode == 0 else None
 
 
 def source_version():
@@ -348,7 +352,7 @@ def source_version():
     """
     commit = git("log", "-1", "--format=%h", "--", *VERSION_SOURCES)
     if not commit:
-        return {"version": "unknown", "commit": "unknown", "dirty": False}
+        return {"version": "unknown", "commit": "unknown", "dirty": False, "changed": []}
     tag = git("describe", "--tags", "--abbrev=0", "--match", f"{TAG_PREFIX}*", "HEAD")
     if tag and git("diff", "--quiet", tag, "HEAD", "--", *VERSION_SOURCES) is not None:
         described = tag
@@ -356,8 +360,10 @@ def source_version():
         described = git("describe", "--tags", "--always", "--match", f"{TAG_PREFIX}*", commit) or commit
     if described.startswith(TAG_PREFIX):
         described = described[len(TAG_PREFIX):]
-    dirty = bool(git("status", "--porcelain", "--", *VERSION_SOURCES))
-    return {"version": described + ("-dirty" if dirty else ""), "commit": commit, "dirty": dirty}
+    status = git("status", "--porcelain", "--", *VERSION_SOURCES) or ""
+    changed = [line[3:] for line in status.splitlines() if line.strip()]
+    dirty = bool(changed)
+    return {"version": described + ("-dirty" if dirty else ""), "commit": commit, "dirty": dirty, "changed": changed}
 
 
 def file_hashes(folder):
@@ -639,14 +645,26 @@ def main():
     ap.add_argument("--check", metavar="FOLDER",
                     help="instead of building, compare the skill folders installed in FOLDER with a fresh build "
                          "of --target (a single target), and report each as current, out of date or edited")
+    ap.add_argument("--allow-dirty", action="store_true",
+                    help="build even if the sources have uncommitted changes or git isn't available; the version "
+                         "is then marked -dirty or unknown. Use it to try out changes, not for a copy to hand out")
     args = ap.parse_args()
 
     ver = source_version()
     if ver["version"] == "unknown":
-        print("warning: git isn't available, so the build's version is unknown", file=sys.stderr)
+        problem = "git isn't available, so the build can't be traced to a commit"
+        advice = "Run it where git is on the PATH, or pass --allow-dirty to build anyway (version unknown)."
     elif ver["dirty"]:
-        print("warning: the sources have uncommitted changes, so the version is marked -dirty", file=sys.stderr)
+        problem = ("the sources have uncommitted changes, so the build can't be traced to a commit:\n"
+                   + "\n".join(f"  {path}" for path in ver["changed"]))
+        advice = "Commit them first, or pass --allow-dirty to build anyway (the version is marked -dirty)."
+    else:
+        problem = advice = None
     try:
+        if problem and not args.check and not args.allow_dirty:
+            raise ConvertError(f"{problem}\n{advice}")
+        if problem:
+            print(f"warning: {problem}", file=sys.stderr)
         if args.check:
             if args.target == "all":
                 raise ConvertError("--check needs a single --target, the one the skills were installed from")
