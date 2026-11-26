@@ -145,7 +145,7 @@ All three use the open Agent Skills format: a folder holding a `SKILL.md`, with 
 - **One build per environment:** `dist/claude-code/.claude/skills/`, `dist/cursor/.cursor/skills/`, and `dist/copilot/.github/skills/`. Each holds `assessor`, `designer`, `summarizer` and `clarify`, with the process and templates copied into each skill that needs them. Cursor can also read the Claude Code build, but that build carries Claude Code tool names Cursor doesn't have, so a separate neutral build is cleaner.
 - **Checks.** It fails if any build still has a Claude Code tool name, `$ARGUMENTS` or a `docs/` path, or if a copied file is missing.
 - **Testing.** Before relying on a build, run it once in each environment on one subject, such as `public-web-server`, and compare the output with this project's.
-- **When the agents change.** Run the script again, and update the README and the data flow diagram for the new environments.
+- **When the agents change.** Run the script again, and update the README for the new environments. The data flow diagram (`docs/project-data-flow.html`) leaves the export out on purpose (decided 2026-11-27).
 
 #### Sources
 
