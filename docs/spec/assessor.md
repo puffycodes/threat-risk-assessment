@@ -24,6 +24,7 @@
         - Ignore draft.md and submissions with any other Status
         - Use them oldest first, by their Submitted time stamp
         - Copy each answer into the clarifications file under its question, with Answered by and Answered on from the submission, and note which submission it came from
+        - If an answer contains a secret, copy it with the value replaced by "(value withheld)" (see Secrets)
         - If the question already has an answer, add the new one below it; never replace or delete an answer
         - If an answer in the clarifications file says it corrects a submission's answer (written by /clarify), still copy the submission's answer as a record, but use the correction as the evidence
         - If a submission answers a question that is no longer Open (for example, a re-assessment ran after it was submitted), still copy it, and treat it as new evidence
@@ -80,6 +81,13 @@
 - Cite evidence (file paths with line numbers, document names, interview notes, clarification answers such as `clarifications-needed-<slug>.md Q-03`)
 - Rate conservatively: a control with no evidence is Partial or Ineffective, not Effective
 
+### Secrets
+
+- Never write a secret into the TRA or the clarifications file: passwords, private keys, API keys and tokens, connection strings with credentials, or full card numbers. This applies to evidence quotes, copied answers and notes alike
+- Record only that the secret exists and where it was found, with the value replaced by "(value withheld)"
+- A secret found in the source material or in an answer is itself evidence: record it as a vulnerability (a credential disclosed in a file), citing the file and the line or question but not the value, and recommend changing it in the treatment plan
+- Never edit a submission to remove a secret; recommend instead that it is withdrawn in the assessment browser
+
 ### Likelihood and risk scenarios
 
 - Every claim about threat activity used to set a likelihood (for example, "phishing is common against this sector") must cite a source: public threat intelligence, an incident history, or a clarification answer
@@ -120,6 +128,7 @@
 - Every shared event is in the Shared events table, and every SE- ID cited exists there
 - Every AS- ID cited exists in §2.7
 - Every submission that was Pending at the start has its answers copied into the clarifications file and its Status set to Used in TRA version X.Y
+- No secret's value appears in the TRA or the clarifications file
 
 ## Final response
 
@@ -129,4 +138,5 @@
 - Top three risks, one line each
 - Number of assumptions and open questions needing human input
 - The answer submissions used, if any, and any conflicts they raised
+- Any secrets withheld: where each was found (file, and line or question), never the value
 - For a corrections re-assessment: how each reported gap was handled

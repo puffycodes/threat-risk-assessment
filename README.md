@@ -293,6 +293,8 @@ A re-assessment can raise ratings as well as lower them: an answer can reveal a 
 
 **Browser submissions.** The assessor uses only submissions whose Status is `Pending`; it ignores the draft and withdrawn submissions. Each answer goes under its question, followed by "(from answers-<…>.md)". If the question already has an answer, the new one is added below it as a **Further answer**, so nothing is replaced. Answers to questions that have since closed are still copied, as new evidence. If `/clarify` recorded a correction to a submitted answer, the submitted answer is still copied as a record, but the correction is the one used as evidence. The assessor changes only the submission's Status row, never its answers.
 
+**Secrets.** The assessor never writes a password, key, token or full card number into the TRA or the clarifications file, whether it comes from the source material or a submitted answer. It copies the answer with the value replaced by "(value withheld)". It also records the disclosure as a vulnerability, and recommends changing the secret and withdrawing the submission in the browser, since the secret stays in the submission file.
+
 ---
 
 ## The designer agent

@@ -62,6 +62,7 @@ If the output file already exists, read it first and update it rather than overw
    - Every shared event is in the Shared events table, and every SE- ID cited exists there.
    - Every AS- ID cited exists in §2.7.
    - Every submission that was `Pending` when you started has its answers copied into the clarifications file and its Status set to `Used in TRA version X.Y`.
+   - No secret's value appears in the TRA or the clarifications file (see Rules for secrets).
 
 ## Re-assessment
 
@@ -124,7 +125,7 @@ Use them as follows:
   - If the question's Answer is blank, put the answer there, followed by `(from answers-<YYYYMMDD-HHMMSS>.md)`.
   - If the question already has an answer, keep it and add a further answer below its metadata: `- **Further answer:** <answer> (from answers-<YYYYMMDD-HHMMSS>.md)`. Never replace or delete an answer.
   - Below the copied answer, add `- **Answered by:**` with the submission's Answered by, and `- **Answered on:**` with the date part of its Submitted time stamp (YYYY-MM-DD).
-  - Copy the answer text exactly. Keep its line breaks, indented two spaces under the list item, and keep any backslash at the start of a line: it stops the line being read as a heading, list item or table row.
+  - Copy the answer text exactly. Keep its line breaks, indented two spaces under the list item, and keep any backslash at the start of a line: it stops the line being read as a heading, list item or table row. The one exception is a secret: replace its value with `(value withheld)` (see Rules for secrets).
   - If the question is no longer `Open` (for example, a re-assessment ran after it was submitted), still copy the answer, and treat it as new evidence.
   - Questions listed under "Don't know" get no answer. Mention them in the revision history row, and when you refresh their Why it matters, consider naming a different role to ask.
 - **Corrections from /clarify.** If an answer in the clarifications file says it corrects a submission's answer (for example "Corrects the pending answer in answers-20261008-150512.md"), still copy the submission's answer as a record, but use the correction as the evidence.
@@ -140,6 +141,13 @@ Use them as follows:
 - Cite evidence wherever you state a fact: in the vulnerability "Source / evidence" column, in control notes, and in the text. Use file paths with line numbers, document names, interview notes, or clarification answers (for example `clarifications-needed-<slug>.md Q-03`).
 - Rate conservatively. When evidence for a control is missing, treat the control as `Partial` or `Ineffective`, not `Effective`.
 - Do not modify the process or template files.
+
+## Rules for secrets
+
+- **Never write a secret** into the TRA or the clarifications file: passwords, private keys, API keys and tokens, connection strings with credentials, or full card numbers. This applies everywhere, including evidence quotes in Appendix B, answers copied from submissions, and notes.
+- **Record only that it exists.** Replace the value with `(value withheld)`, for example `"Admins log in with SSH, password (value withheld)"`. Say in the revision history row of the file that a value was withheld, and from which question.
+- **Treat the disclosure as evidence.** A secret found in the source material or in an answer has been exposed to everyone who can read that file. Record it as a vulnerability, such as "An administrator password was written in a submission file", citing the file and the line or question but not the value. Recommend changing the secret in the treatment plan.
+- **Never edit a submission to remove a secret.** You change only its Status row. Recommend in the treatment plan that the submission is withdrawn in the assessment browser, and that the person submits again without the secret.
 
 ## Rules for likelihood and risk scenarios
 
@@ -174,4 +182,5 @@ When finished, reply with:
 - The top three risks, one line each
 - The number of assumptions and open questions that need human input
 - The answer submissions used, if any, and any conflicts they raised
+- Any secrets withheld: where each was found (file, and line or question), never the value
 - For a corrections re-assessment: how each reported gap was handled (fixed, or not fixed and why)
