@@ -45,6 +45,7 @@ For how data moves between people, the agents, the files and the browser, and wh
 ├── docs/
 │   ├── threat-risk-assessment-process.md    # the 11-step TRA process the assessor follows
 │   ├── project-data-flow.html               # data flow diagram of this workspace (open in a browser)
+│   ├── design-considerations.md             # design decisions and findings, such as agent vs skill
 │   ├── templates/
 │   │   ├── threat-risk-assessment-template.md  # the TRA document template
 │   │   ├── clarifications-template.md          # the clarifications file layout
