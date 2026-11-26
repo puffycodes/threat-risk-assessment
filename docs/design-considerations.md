@@ -161,12 +161,12 @@ All three use the open Agent Skills format: a folder holding a `SKILL.md`, with 
 
 **Checked:** 2026-11-26, against the output of `tools/agent-to-skill/convert.py` and the assessment browser's code.
 
-**Status:** Possible. Not built.
+**Status:** Built as the `generic` target of `tools/agent-to-skill/convert.py`, writing to `dist/generic/skills/`, with the changes below. The `cursor` and `copilot` targets are unchanged and still use `/clarify`. The generic build hasn't been test-run on any host yet.
 
 #### What the current builds show
 
 - **The Cursor and Copilot builds are already nearly generic.** Their skill folders are identical (`diff -r` finds no differences); only the folder they're placed in differs. Both keep only `name` and `description` in the frontmatter, and use plain wording in place of Claude Code tool names.
-- **The `/clarify` slash command is the only host-specific wording left.** It appears 4 times in the assessor and twice in clarify, including the `(via /clarify)` note clarify writes into the revision history.
+- **The `/clarify` slash command is the only host-specific wording left.** It appears 3 times in the assessor and 3 times in clarify (once in its description), including the `(via /clarify)` note clarify writes into the revision history.
 - **The assessment browser only displays that text.** It mentions `/clarify` in messages (`tools/assessment-browser/serve.py`, `static/app.js`) but never parses it, so the wording can change without breaking the browser.
 
 #### What a generic target would change

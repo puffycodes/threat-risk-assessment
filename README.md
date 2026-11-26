@@ -572,11 +572,11 @@ When a change adds, removes or alters a data flow, for example a new agent, a ne
 
 ## Exporting the agents as skills
 
-Some environments support skills but not agents. For those, `tools/agent-to-skill/convert.py` builds the three agents and `/clarify` as skills, for Claude Code in another project, Cursor and GitHub Copilot. This project keeps running the agents as agents, and the script never changes them.
+Some environments support skills but not agents. For those, `tools/agent-to-skill/convert.py` builds the three agents and `/clarify` as skills, for Claude Code in another project, Cursor and GitHub Copilot. It also makes a generic build for any other host that supports the Agent Skills standard. This project keeps running the agents as agents, and the script never changes them.
 
 ```
-python tools/agent-to-skill/convert.py                  # all three targets
-python tools/agent-to-skill/convert.py --target cursor  # one target: claude-code, cursor or copilot
+python tools/agent-to-skill/convert.py                  # all four targets
+python tools/agent-to-skill/convert.py --target cursor  # one target: claude-code, cursor, copilot or generic
 ```
 
 It needs only Python 3, and writes to `dist/`, which isn't in git:
@@ -586,6 +586,7 @@ It needs only Python 3, and writes to `dist/`, which isn't in git:
 | `claude-code` | `dist/claude-code/.claude/skills/` | `.claude/skills/` |
 | `cursor` | `dist/cursor/.cursor/skills/` | `.cursor/skills/` |
 | `copilot` | `dist/copilot/.github/skills/` | `.github/skills/` |
+| `generic` | `dist/generic/skills/` | Wherever the host loads skills from, or upload a zipped folder |
 
 Each skill folder holds a `SKILL.md` and copies of the process and template files the skill reads, so the other project needs nothing from `docs/`. Each target also gets a `README.md` with install notes.
 
@@ -595,7 +596,11 @@ What the script changes:
 - `docs/` paths point to the copies in the skill's folder.
 - "the summarizer agent" becomes "the summarizer skill", and the same for the other agents.
 - Each skill gets a "How this skill runs" note listing the tools it may use. As a skill, it runs in the main conversation with every tool the environment has, so the note is the only limit.
-- **For Cursor and Copilot only:** the frontmatter keeps just `name` and `description`. Claude Code tool names are replaced with plain wording. `/clarify` asks one question at a time in the chat instead of in Claude Code's question dialog.
+- **For Cursor, Copilot and generic:** the frontmatter keeps just `name` and `description`. Claude Code tool names are replaced with plain wording. `/clarify` asks one question at a time in the chat instead of in Claude Code's question dialog.
+- **For generic only:**
+  - It adds the standard's `compatibility` field, saying what the host must provide.
+  - The `/clarify` slash command becomes "the clarify skill".
+  - The "How this skill runs" note describes what the skill may do rather than which tools it may use. On hosts that reach files only through a shell, it may use the shell for file work, but never to install software or to reach the network.
 
 Run it again after changing an agent, `/clarify`, the process or a template. The script checks its own output. If an agent's wording no longer matches a rewrite rule, or a Claude Code tool name or `docs/` path is left in a skill, it stops, names the rule to update, and leaves the previous build in place. Why it works this way, and the risks of running the procedures as skills, are in [Agent vs Skill](docs/design-considerations.md#agent-vs-skill).
 
