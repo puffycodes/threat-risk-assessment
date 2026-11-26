@@ -90,3 +90,67 @@ Cost: there's no way to run the assessment in the main conversation. Given the r
 1. Test-run it on one subject and check that the outputs match a run of the agent as it is.
 2. Update the spec in `docs/spec/`, the README and the data flow diagram, as "Changing the agents" in the README describes.
 3. After a Claude Code upgrade, check these fields again. They change between versions.
+
+### Exporting the agents as skills for other environments
+
+**Question:** Can a script convert the three agents, and `/clarify`, into skills for environments that support only skills, such as Claude Code in another project, Cursor and GitHub Copilot, while this project keeps running them as agents?
+
+**Checked:** 2026-11-26, against the Cursor and GitHub documentation and the Agent Skills specification (sources below). Nothing has been built or tested in Cursor or Copilot yet.
+
+**Status:** Possible. Not built.
+
+#### Where the environments agree
+
+All three use the open Agent Skills format: a folder holding a `SKILL.md`, with `name` and `description` in its frontmatter and optional files beside it.
+
+| Environment | Where project skills go | Notes |
+|---|---|---|
+| Claude Code | `.claude/skills/` | Reads every field in "Fields confirmed in 2.1.332" above. |
+| Cursor | `.cursor/skills/` | Also loads `.claude/skills/` and `.codex/skills/`. A skill can be started by typing `/` and its name. |
+| GitHub Copilot | `.github/skills/` | Used by the cloud agent, the Copilot CLI and agent mode in VS Code. One GitHub page still called VS Code stable support "coming soon". `allowed-tools` only skips confirmations, and GitHub advises against pre-approving `shell`. |
+| Agent Skills specification | | Defines only `name`, `description`, `license`, `compatibility`, `metadata` and an experimental `allowed-tools`. Some tools reject frontmatter keys they don't know. |
+
+#### What breaks outside Claude Code
+
+| Issue | Where it is | Claude Code | Cursor / Copilot | What a script would do |
+|---|---|---|---|---|
+| **Claude Code-only frontmatter**: `model`, `argument-hint`, `context` | `model: sonnet` (designer, summarizer), `argument-hint` (clarify) | Works | Ignored, or rejected | Keep them for Claude Code. Remove them for the others. |
+| **Tool names in `allowed-tools`** | All four | `Read, Glob, …` | Different names (Copilot uses names like `shell`), and the list only pre-approves tools | Map them, or remove the field. |
+| **Tool names in the text**: "Use Glob", "Use AskUserQuestion", WebSearch/WebFetch | All four | Works | These tools don't exist there | Replace them with neutral wording ("search for files matching…", "ask the user"). Fail if a tool name it doesn't know is left in. |
+| **`$ARGUMENTS`** | `/clarify` | Filled in with what the user typed | Left as the literal text | Replace it with "the subject and question IDs the user gave". |
+| **Asking questions in a dialog**: up to four per call, with options, via `AskUserQuestion` | `/clarify`, built around it | Works | No equivalent dialog | Ask in plain chat, one question at a time. It works, but it's slower and less structured. |
+| **Files under `docs/`**: the process and four templates | Assessor, designer, clarify | | | Copy them into each skill's folder and rewrite the paths. |
+| **The working folders**: `output/<slug>/`, `scenario/` | All four | Works | Works in the IDEs, which have a project folder. In Copilot's cloud agent, they're folders in the repository. | Unchanged. |
+| **Names of the other agents**: "the summarizer agent", "the assessor agent" | Assessor, summarizer | | | Fixed list of replacements, changing "agent" to "skill". |
+
+#### Risks a script can't remove
+
+1. **No tool limit, anywhere.** In all three environments, the skill runs in the main conversation with whatever tools that environment has. The rule that details of the subject are never sent to external services would rest on the instructions alone. That's the biggest change from running as agents, and it needs stating wherever the skills are used.
+2. **Which model runs them.** The procedures need exact work: Likelihood × Impact arithmetic, consistent IDs, counts that match, and an exact layout, because `/clarify` and the assessment browser parse the file. In Cursor or Copilot, the user's chosen model runs them. A weaker model will drift, and the self-check steps help but don't guarantee the result.
+3. **Context.** Without a separate subagent context, an assessment fills the chat quickly, especially in IDEs with smaller context windows.
+4. **Keeping step with the agents.** The text rewrites rely on the agents' current wording. When an agent changes, the script must fail loudly rather than build a half-converted skill.
+
+#### How each environment would do
+
+| Environment | How well it would work |
+|---|---|
+| Claude Code, another project | **Fully.** Same frontmatter and tools. Only the tool limit and the separate context are lost. |
+| Cursor | **Works, with reduced protections.** The assessor, designer and summarizer run, though output quality depends on the model. `/clarify` falls back to asking in plain chat. |
+| GitHub Copilot (CLI, VS Code agent mode) | **Same as Cursor.** It's the least predictable of the three, because the cloud agent works in a repository rather than a local folder. |
+
+#### Recommended design
+
+- **A new tool, `tools/agent-to-skill/convert.py`.** Python 3 with the standard library only, like `tools/data-flow-diagram/generate.py`.
+- **Source.** It reads `.claude/agents/*.md` and `.claude/skills/clarify/SKILL.md`, and changes neither. This project keeps running the agents exactly as it does now.
+- **One build per environment:** `dist/claude-code/.claude/skills/`, `dist/cursor/.cursor/skills/`, and `dist/copilot/.github/skills/`. Each holds `assessor`, `designer`, `summarizer` and `clarify`, with the process and templates copied into each skill that needs them. Cursor can also read the Claude Code build, but that build carries Claude Code tool names Cursor doesn't have, so a separate neutral build is cleaner.
+- **Checks.** It fails if any build still has a Claude Code tool name, `$ARGUMENTS` or a `docs/` path, or if a copied file is missing.
+- **Testing.** Before relying on a build, run it once in each environment on one subject, such as `public-web-server`, and compare the output with this project's.
+- **When the agents change.** Run the script again, and update the README and the data flow diagram for the new environments.
+
+#### Sources
+
+- [Cursor – Agent Skills](https://cursor.com/docs/skills)
+- [GitHub Docs – Adding agent skills for Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills)
+- [GitHub Docs – Adding agent skills for Copilot cloud agent](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills)
+- [Microsoft Learn – Copilot agent skills in Visual Studio](https://learn.microsoft.com/en-us/visualstudio/ide/copilot-agent-skills)
+- [Agent Skills specification](https://agentskills.io/specification.md)
