@@ -97,7 +97,7 @@ Cost: there's no way to run the assessment in the main conversation. Given the r
 
 **Checked:** 2026-11-26, against the Cursor and GitHub documentation and the Agent Skills specification (sources below). Nothing has been built or tested in Cursor or Copilot yet.
 
-**Status:** Built as `tools/agent-to-skill/convert.py` (see "Exporting the agents as skills" in the README), to the recommended design below. Two additions: each skill gets a "How this skill runs" note listing the tools it may use and repeating the rule against sending subject details out, and a failed build leaves the previous one in place. The built skills haven't been test-run in any of the three environments yet.
+**Status:** Built as `tools/agent-to-skill/convert.py` (see "Exporting the agents as skills" in the README), to the recommended design below. Two additions: each skill gets a "How this skill runs" note listing the tools it may use and repeating the rule against sending subject details out, and a failed build leaves the previous one in place. Since then, the checks also cover the process and template files a skill copies, and the links between them (see the dry run under [A generic build](#a-generic-build-with-no-environment-in-mind)). The built skills haven't been test-run in any of the three environments yet.
 
 #### Where the environments agree
 
@@ -161,7 +161,7 @@ All three use the open Agent Skills format: a folder holding a `SKILL.md`, with 
 
 **Checked:** 2026-11-26, against the output of `tools/agent-to-skill/convert.py` and the assessment browser's code.
 
-**Status:** Built as the `generic` target of `tools/agent-to-skill/convert.py`, writing to `dist/generic/skills/`, with the changes below. The `cursor` and `copilot` targets are unchanged and still use `/clarify`. The generic build hasn't been test-run on any host yet.
+**Status:** Built as the `generic` target of `tools/agent-to-skill/convert.py`, writing to `dist/generic/skills/`, with the changes below. The `cursor` and `copilot` targets are unchanged and still use `/clarify`. The generic build has had one dry run, described below, but hasn't been test-run on any host other than Claude Code.
 
 #### What the current builds show
 
@@ -195,3 +195,27 @@ These are things the host must be able to do, not dependencies on a particular p
 - **Add a `generic` target** to `convert.py`, with the changes above.
 - **Keep the `cursor` and `copilot` targets** for convenience: they put the same content in the right folder, so installing stays a single copy. They could take the `/clarify` change too, so the three neutral builds differ only in where they're placed and in the `compatibility` field.
 - **Keep the `claude-code` target separate.** It's the only one that keeps `model`, `argument-hint`, `allowed-tools` and the question dialog.
+
+#### Dry run of the generic build
+
+**Run:** 2026-11-26. The generic skills were installed in `tmp/generic-test/`, a scratch project that git ignores, with the `public-web-server` scenario. Claude Code followed each `SKILL.md` as written, reading only the skill's own folder.
+
+**What it shows, and what it doesn't.** The skill folders are complete and self-contained, and their procedures can be carried out to the end. It doesn't show how another host finds, starts or follows a skill. The run was in Claude Code, by a model that already knew the original agents, so it leans toward success.
+
+| Step | Result |
+|---|---|
+| Specification check | All four skills have valid frontmatter, names that match their folders, and every file they name |
+| Assessor, first assessment | TRA v0.1 and clarifications v0.1 passed the self-check, and the assessment browser's parser read them as it reads this project's output |
+| Designer and summarizer, first run | Both passed their self-checks |
+| Clarify, review mode | Caught the three problems planted in a test submission (a vague answer, a password and a contradiction) and changed no file |
+| Clarify, interview | Asked one question at a time in the chat, split a three-part question, saved after each answer and stopped cleanly on "stop" |
+| Assessor, re-assessment | Used the interview answers and the pending submission, recorded the SSH contradiction as an assumption rather than settle it, and passed the self-check |
+| Designer and summarizer, update | The designer kept its IDs stable and retired one control; the summarizer wrote a new version and left the earlier one unchanged |
+
+**Problems found, and fixed:**
+
+- **Copied templates still named `/clarify`.** The converter rewrote it in each `SKILL.md` but not in the files a skill copies. The generic target now rewrites the copied clarifications template too, and the checks cover copied files.
+- **Copied templates had broken links.** Their links pointed at places in `docs/` that the skill folders don't have. The converter now points each link at the copy, or drops a link to a file the skill doesn't copy, and fails the build on a link that leads outside the skill's folder. This affected every target, not only generic.
+- **The assessor had no rule for secrets.** It copied submitted answers exactly, so a password typed in the assessment browser would have reached the clarifications file and the TRA. The assessor now withholds the value, records the disclosure as a vulnerability, and recommends changing the secret and withdrawing the submission. This was a gap in the agent itself, so the fix applies to the agents too.
+
+**Still to do:** a test run on a host other than Claude Code, such as Cursor or GitHub Copilot.
