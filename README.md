@@ -11,6 +11,8 @@ A workspace for producing threat risk assessments (TRAs), and the security desig
 
 To read the results, the [assessment browser](#browsing-the-assessments) shows every subject's documents in a web browser. It's a small local web server and doesn't use any agent or skill.
 
+To use the agents and `/clarify` somewhere that supports skills but not agents, such as Cursor, GitHub Copilot or another Claude Code project, [export them as skills](#exporting-the-agents-as-skills).
+
 For how data moves between people, the agents, the files and the browser, and which flows leave your machine, open the [data flow diagram](docs/project-data-flow.html) in a web browser.
 
 ## Contents
@@ -612,6 +614,7 @@ Run it again after changing an agent, `/clarify`, the process or a template. The
 - **Answers are taken at face value.** The assessor uses clarification answers as given, recording who answered and when. Ask the person who actually knows; for example, Security may not know the payment integration as well as the application owner. Answers from more than one person, and verification by scans, make the ratings more reliable.
 - **Agents don't test anything.** They don't scan, probe or log in to systems. Controls stay `Partial` until someone verifies them; port scans, vulnerability scans and pen tests are recommended as evidence.
 - **Agents have no shell.** They can only read, search and write files.
+- **Exported skills have no enforced tool limit.** Built as skills by `tools/agent-to-skill/convert.py`, they run in the host's main conversation with every tool it has. Only their instructions keep them to file work and away from sending system details out. See [Exporting the agents as skills](#exporting-the-agents-as-skills).
 - **Web access is limited to public information.** The assessor and designer look up public threat intelligence, CVEs and standards such as PCI DSS, CIS and OWASP. They never send details of your system to external services. The summarizer has no web access.
 - **Humans own the decisions.** Risk acceptance, sign-off, owners and design decisions are left blank or `TBD` on purpose.
 - **Review before you rely on it.** Agent output is a draft for a qualified reviewer, not a substitute for one.
