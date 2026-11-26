@@ -69,6 +69,7 @@ For how data moves between people, the agents, the files and the browser, and wh
 ├── tools/agent-to-skill/
 │   └── convert.py                           # builds the agents and /clarify as skills, into dist/
 ├── dist/<target>/                           # skills built by convert.py              (not in git)
+├── tmp/                                     # scratch space for testing               (not in git)
 ├── scenario/<subject>/                      # input: one folder per subject   (not in git)
 │   └── description.md
 └── output/<subject>/                        # generated documents             (not in git)

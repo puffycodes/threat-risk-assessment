@@ -2,6 +2,7 @@ scenario/
 output/
 graphify-out/
 dist/
+tmp/
 
 # Python bytecode (assessment browser)
 __pycache__/
