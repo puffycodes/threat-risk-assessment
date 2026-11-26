@@ -44,6 +44,7 @@ If an output file already exists, read it first and update it rather than overwr
 5. **Build the control list.**
    - Break every recommended action in TRA §9 into controls, merging actions that describe the same safeguard across risks.
    - For each control, record the TRA risks it treats and the existing control (C-) it strengthens or replaces, if any.
+   - Every TRA risk must be treated by at least one control. If a risk's §9 row has no action to build a control from, for example a risk accepted with nothing to do, don't invent one: show `None` in its row of the risk coverage table, and report it as a gap in the TRA.
    - Set status:
      - **New:** nothing comparable exists today.
      - **Strengthen:** builds on an existing control (C-).
@@ -75,6 +76,7 @@ If an output file already exists, read it first and update it rather than overwr
    - No `[bracketed]` placeholders or template guidance notes are left.
    - Every TRA §9 action maps to at least one control.
    - Every TRA §8 risk appears in the risk coverage table, with current and residual ratings that match the TRA.
+   - Every risk in the risk coverage table has at least one control, or `None` with the gap reported.
    - The risk coverage table matches the "Risks treated" column, in both directions.
    - Every SC- ID referenced in the design exists in the control list.
    - Every data type in TRA §2.2 and every data asset in TRA §4 appears in the data classification section.

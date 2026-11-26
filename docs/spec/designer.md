@@ -63,6 +63,7 @@
 - If you find a gap in the TRA, report it in the final response and recommend a re-assessment
 - Every recommended action in the TRA treatment plan (§9) must map to at least one control
 - Every TRA risk must be treated by at least one control
+    - If a risk's treatment plan row has no action to build a control from, don't invent one; show None in the risk coverage table and report it as a gap in the TRA
 - Control IDs are SC-01, SC-02 and so on
 - Keep SC-, DP-, F- and DD- IDs stable across updates; never renumber or reuse them
 - Mark a dropped control as Retired, with the reason, instead of deleting it
