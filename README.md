@@ -348,6 +348,7 @@ The control list also has a risk-coverage table, a table showing what happens to
 ### Rules worth knowing
 
 - **It derives; it doesn't assess.** It never adds or re-scores risks. If it finds a gap in the TRA, it tells you to re-assess.
+- **Every risk gets a control, or a reported gap.** Each TRA risk is treated by at least one control. A risk whose treatment plan row has no action, such as one accepted with nothing to do, shows `None` in the risk coverage table and is reported as a gap in the TRA, rather than given a control the TRA didn't recommend.
 - **SC- IDs are stable.** They are never renumbered or reused, and a dropped control is marked `Retired`. That makes the control list safe to track in a ticketing system.
 - **Compliance differences are flagged, not hidden.** If a requirement is stricter than the TRA (for example, PCI DSS requiring firewall reviews every six months when the TRA says yearly), both figures are shown in the control after "DIFFERENCE:", and the control is listed in section 1 of the control list. The TRA is left unchanged; fix it at the next re-assessment.
 - **Conditional controls are marked.** A control that may already be met once an open question is answered, such as a claimed control the TRA doesn't credit until someone confirms it, is written as evidence collection and listed in section 1.
