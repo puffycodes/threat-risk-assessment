@@ -154,3 +154,44 @@ All three use the open Agent Skills format: a folder holding a `SKILL.md`, with 
 - [GitHub Docs – Adding agent skills for Copilot cloud agent](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills)
 - [Microsoft Learn – Copilot agent skills in Visual Studio](https://learn.microsoft.com/en-us/visualstudio/ide/copilot-agent-skills)
 - [Agent Skills specification](https://agentskills.io/specification.md)
+
+### A generic build, with no environment in mind
+
+**Question:** Can the converter also build a generic version of the skills, with no dependency on any one environment?
+
+**Checked:** 2026-11-26, against the output of `tools/agent-to-skill/convert.py` and the assessment browser's code.
+
+**Status:** Possible. Not built.
+
+#### What the current builds show
+
+- **The Cursor and Copilot builds are already nearly generic.** Their skill folders are identical (`diff -r` finds no differences); only the folder they're placed in differs. Both keep only `name` and `description` in the frontmatter, and use plain wording in place of Claude Code tool names.
+- **The `/clarify` slash command is the only host-specific wording left.** It appears 4 times in the assessor and twice in clarify, including the `(via /clarify)` note clarify writes into the revision history.
+- **The assessment browser only displays that text.** It mentions `/clarify` in messages (`tools/assessment-browser/serve.py`, `static/app.js`) but never parses it, so the wording can change without breaking the browser.
+
+#### What a generic target would change
+
+| Change | Why |
+|---|---|
+| Write to `dist/generic/skills/<name>/`, with no environment's folder around it | The user copies the folders into wherever the host looks: `.cursor/skills/`, `.github/skills/`, `.claude/skills/` or a host's upload form. |
+| Add the specification's `compatibility` field (max 500 characters), for example *"Needs a project folder it can read and write. Web search is optional."* | It's the standard way for a skill to state what it needs. The Cursor and Copilot builds leave it out because their docs don't list it, but a generic build should follow the specification exactly. |
+| Replace `/clarify` with "the clarify skill", including in the revision history note | How a skill is started varies, and some hosts choose skills only from their description. |
+| Reword the "How this skill runs" note to describe what the skill does, not which tools it uses | The current note forbids shell commands. That would block hosts where file access goes through a shell (see below). |
+
+The converter's checks would also fail if `/clarify`, or a tool name from any host, is left in a generic skill.
+
+#### What a generic skill still depends on
+
+These are things the host must be able to do, not dependencies on a particular product. No conversion can remove them.
+
+1. **A project folder it can read and write.** Every skill reads `scenario/` or `output/` and writes to `output/<subject>/`. A host with no file access, such as a plain chat, can't run them.
+2. **Hosts where file access goes through a shell.** In the Claude API and claude.ai, a skill reads and writes files by running commands in a sandbox. The current note's "Don't run shell commands" would stop it working there. The generic note would instead say: use whatever the host provides only to read, search and write files in the project folder, and never use it to fetch from or send to the network. That's looser than the current note, and still relies on the instructions alone.
+3. **A conversation with the user, for clarify.** Every host has one, and the neutral clarify already asks one question at a time in the chat.
+4. **Web search, for the assessor and designer.** It's optional. Both work without it, with less to cite.
+5. **A capable model.** As for the other builds, the exact scoring and layout depend on it.
+
+#### Recommendation
+
+- **Add a `generic` target** to `convert.py`, with the changes above.
+- **Keep the `cursor` and `copilot` targets** for convenience: they put the same content in the right folder, so installing stays a single copy. They could take the `/clarify` change too, so the three neutral builds differ only in where they're placed and in the `compatibility` field.
+- **Keep the `claude-code` target separate.** It's the only one that keeps `model`, `argument-hint`, `allowed-tools` and the question dialog.
