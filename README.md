@@ -586,7 +586,7 @@ python tools/agent-to-skill/convert.py                  # all four targets
 python tools/agent-to-skill/convert.py --target cursor  # one target: claude-code, cursor, copilot or generic
 ```
 
-It needs only Python 3, and git for the version (see [Versions of the exported skills](#versions-of-the-exported-skills)). It writes to `dist/`, which isn't in git:
+It needs Python 3.9 or later, with no packages to install, and git for the version (see [Versions of the exported skills](#versions-of-the-exported-skills)). It writes to `dist/`, which isn't in git:
 
 | Target | Output | Copy into the other project's |
 |---|---|---|
