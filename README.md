@@ -604,7 +604,7 @@ What the script changes:
   - The `/clarify` slash command becomes "the clarify skill".
   - The "How this skill runs" note describes what the skill may do rather than which tools it may use. On hosts that reach files only through a shell, it may use the shell for file work, but never to install software or to reach the network.
 
-Run it again after changing an agent, `/clarify`, the process or a template. The script checks its own output. If an agent's wording no longer matches a rewrite rule, or a Claude Code tool name or `docs/` path is left in a skill, it stops, names the rule to update, and leaves the previous build in place. Why it works this way, and the risks of running the procedures as skills, are in [Agent vs Skill](docs/design-considerations.md#agent-vs-skill).
+Run it again after changing an agent, `/clarify`, the process or a template. The script checks its own output. If an agent's wording no longer matches a rewrite rule, or a Claude Code tool name or `docs/` path is left in a skill or in a file it copies, it stops, names the rule to update, and leaves the previous build in place. Why it works this way, and the risks of running the procedures as skills, are in [Agent vs Skill](docs/design-considerations.md#agent-vs-skill).
 
 ---
 
