@@ -23,6 +23,7 @@ Uses only the Python standard library.
 """
 
 import argparse
+import posixpath
 import re
 import shutil
 import sys
@@ -235,6 +236,47 @@ def bundled_path(doc_path):
     return "references/" + rel
 
 
+LINK_RE = re.compile(r"\[([^\]\n]*)\]\(([^)\s]+)\)")
+
+
+def is_local_link(target):
+    return not re.match(r"[a-z][a-z0-9+.-]*:|#", target, re.I)
+
+
+def fix_links(text, doc, doc_paths):
+    """Point a copied file's relative links at the copies in the skill folder.
+
+    A link to a file the skill also copies is rewritten to that copy's place.
+    A link to anything else is dropped, keeping its text, because the file
+    isn't in the skill folder.
+    """
+    here = posixpath.dirname(bundled_path(doc))
+
+    def fix(m):
+        label, target = m.groups()
+        if not is_local_link(target):
+            return m.group(0)
+        path, sep, fragment = target.partition("#")
+        linked = posixpath.normpath(posixpath.join(posixpath.dirname(doc), path))
+        if linked not in doc_paths:
+            return label
+        return f"[{label}]({posixpath.relpath(bundled_path(linked), here or '.')}{sep}{fragment})"
+
+    return LINK_RE.sub(fix, text)
+
+
+def broken_links(text, base_dir, skill_dir):
+    """Relative links in text that don't lead to a file in the skill folder."""
+    broken = []
+    for label, target in LINK_RE.findall(text):
+        if not is_local_link(target):
+            continue
+        linked = (base_dir / target.partition("#")[0]).resolve()
+        if not linked.is_file() or skill_dir.resolve() not in linked.parents:
+            broken.append(target)
+    return broken
+
+
 def tool_phrases(tools, source):
     phrases = []
     for tool in tools:
@@ -322,6 +364,7 @@ def build_skill(source, target_name, target, out_skills):
         doc_text = src_doc.read_text(encoding="utf-8").replace("\r\n", "\n")
         if generic:
             doc_text = apply_exact(doc_text, GENERIC_DOC_REWRITES.get(doc, []), doc, "GENERIC_DOC_REWRITES")
+        doc_text = fix_links(doc_text, doc, doc_paths)
         problems = forbidden_text(doc_text, target)
         if problems:
             raise ConvertError(f"{doc} ({target_name}, copied for {source}): the copy still has:\n"
@@ -381,6 +424,12 @@ def check(skill_text, skill_dir, source, target_name, target):
     for ref in sorted(set(re.findall(r"`((?:references|templates)/[\w./-]+\.md)`", skill_text))):
         if not (skill_dir / ref).is_file():
             problems.append(f"  {ref} is named but wasn't copied")
+    for target in broken_links(skill_text, skill_dir, skill_dir):
+        problems.append(f"  SKILL.md links to {target}, which isn't in the skill folder")
+    for copied in sorted(skill_dir.rglob("*.md")):
+        for target in broken_links(copied.read_text(encoding="utf-8"), copied.parent, skill_dir):
+            rel = copied.relative_to(skill_dir).as_posix()
+            problems.append(f"  {rel} links to {target}, which isn't in the skill folder")
     if problems:
         raise ConvertError(f"{source} ({target_name}): the built skill still has:\n" + "\n".join(problems)
                            + "\nAdd a rewrite rule in tools/agent-to-skill/convert.py.")

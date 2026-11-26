@@ -597,6 +597,7 @@ What the script changes:
 
 - An agent's `tools` becomes the skill's `allowed-tools`.
 - `docs/` paths point to the copies in the skill's folder.
+- Links between the copied files point to the copies. A link to a file the skill doesn't copy is dropped, keeping its text.
 - "the summarizer agent" becomes "the summarizer skill", and the same for the other agents.
 - Each skill gets a "How this skill runs" note listing the tools it may use. As a skill, it runs in the main conversation with every tool the environment has, so the note is the only limit.
 - **For Cursor, Copilot and generic:** the frontmatter keeps just `name` and `description`. Claude Code tool names are replaced with plain wording. `/clarify` asks one question at a time in the chat instead of in Claude Code's question dialog.
@@ -605,7 +606,7 @@ What the script changes:
   - The `/clarify` slash command becomes "the clarify skill".
   - The "How this skill runs" note describes what the skill may do rather than which tools it may use. On hosts that reach files only through a shell, it may use the shell for file work, but never to install software or to reach the network.
 
-Run it again after changing an agent, `/clarify`, the process or a template. The script checks its own output. If an agent's wording no longer matches a rewrite rule, or a Claude Code tool name or `docs/` path is left in a skill or in a file it copies, it stops, names the rule to update, and leaves the previous build in place. Why it works this way, and the risks of running the procedures as skills, are in [Agent vs Skill](docs/design-considerations.md#agent-vs-skill).
+Run it again after changing an agent, `/clarify`, the process or a template. The script checks its own output. If an agent's wording no longer matches a rewrite rule, a Claude Code tool name or `docs/` path is left in a skill or in a file it copies, or a link leads outside the skill's folder, it stops, names the rule to update, and leaves the previous build in place. Why it works this way, and the risks of running the procedures as skills, are in [Agent vs Skill](docs/design-considerations.md#agent-vs-skill).
 
 ---
 
