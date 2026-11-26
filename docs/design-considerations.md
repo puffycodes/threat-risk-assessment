@@ -97,7 +97,7 @@ Cost: there's no way to run the assessment in the main conversation. Given the r
 
 **Checked:** 2026-11-26, against the Cursor and GitHub documentation and the Agent Skills specification (sources below). Nothing has been built or tested in Cursor or Copilot yet.
 
-**Status:** Possible. Not built.
+**Status:** Built as `tools/agent-to-skill/convert.py` (see "Exporting the agents as skills" in the README), to the recommended design below. Two additions: each skill gets a "How this skill runs" note listing the tools it may use and repeating the rule against sending subject details out, and a failed build leaves the previous one in place. The built skills haven't been test-run in any of the three environments yet.
 
 #### Where the environments agree
 

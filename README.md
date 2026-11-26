@@ -27,6 +27,7 @@ For how data moves between people, the agents, the files and the browser, and wh
 - [ID schemes](#id-schemes)
 - [Versioning](#versioning)
 - [Changing the agents](#changing-the-agents)
+- [Exporting the agents as skills](#exporting-the-agents-as-skills)
 - [Limits and good practice](#limits-and-good-practice)
 
 ---
@@ -63,6 +64,9 @@ For how data moves between people, the agents, the files and the browser, and wh
 ├── tools/data-flow-diagram/
 │   ├── generate.py                          # writes docs/project-data-flow.html
 │   └── template.html                        # the page around the diagram, with the flow register
+├── tools/agent-to-skill/
+│   └── convert.py                           # builds the agents and /clarify as skills, into dist/
+├── dist/<target>/                           # skills built by convert.py              (not in git)
 ├── scenario/<subject>/                      # input: one folder per subject   (not in git)
 │   └── description.md
 └── output/<subject>/                        # generated documents             (not in git)
@@ -563,6 +567,37 @@ When a change adds, removes or alters a data flow, for example a new agent, a ne
 1. Edit the nodes and edges in `tools/data-flow-diagram/generate.py`, and the flow register and trust boundary notes in `tools/data-flow-diagram/template.html`. Keep the flow numbers in both the same.
 2. Run `python tools/data-flow-diagram/generate.py` from the repository root. It needs only Python 3, and it overwrites `docs/project-data-flow.html`.
 3. Open the page and check that no line or flow number overlaps another, then commit the generator, the template and the page together.
+
+---
+
+## Exporting the agents as skills
+
+Some environments support skills but not agents. For those, `tools/agent-to-skill/convert.py` builds the three agents and `/clarify` as skills, for Claude Code in another project, Cursor and GitHub Copilot. This project keeps running the agents as agents, and the script never changes them.
+
+```
+python tools/agent-to-skill/convert.py                  # all three targets
+python tools/agent-to-skill/convert.py --target cursor  # one target: claude-code, cursor or copilot
+```
+
+It needs only Python 3, and writes to `dist/`, which isn't in git:
+
+| Target | Output | Copy into the other project's |
+|---|---|---|
+| `claude-code` | `dist/claude-code/.claude/skills/` | `.claude/skills/` |
+| `cursor` | `dist/cursor/.cursor/skills/` | `.cursor/skills/` |
+| `copilot` | `dist/copilot/.github/skills/` | `.github/skills/` |
+
+Each skill folder holds a `SKILL.md` and copies of the process and template files the skill reads, so the other project needs nothing from `docs/`. Each target also gets a `README.md` with install notes.
+
+What the script changes:
+
+- An agent's `tools` becomes the skill's `allowed-tools`.
+- `docs/` paths point to the copies in the skill's folder.
+- "the summarizer agent" becomes "the summarizer skill", and the same for the other agents.
+- Each skill gets a "How this skill runs" note listing the tools it may use. As a skill, it runs in the main conversation with every tool the environment has, so the note is the only limit.
+- **For Cursor and Copilot only:** the frontmatter keeps just `name` and `description`. Claude Code tool names are replaced with plain wording. `/clarify` asks one question at a time in the chat instead of in Claude Code's question dialog.
+
+Run it again after changing an agent, `/clarify`, the process or a template. The script checks its own output. If an agent's wording no longer matches a rewrite rule, or a Claude Code tool name or `docs/` path is left in a skill, it stops, names the rule to update, and leaves the previous build in place. Why it works this way, and the risks of running the procedures as skills, are in [Agent vs Skill](docs/design-considerations.md#agent-vs-skill).
 
 ---
 
