@@ -40,11 +40,11 @@ For how data moves between people, the agents, the files and the browser, and wh
 .
 ├── .claude/
 │   ├── agents/
-│   │   ├── assessor.md                      # assessor agent (built from docs/spec/assessor.md)
-│   │   ├── designer.md                      # designer agent (built from docs/spec/designer.md)
-│   │   └── summarizer.md                    # summarizer agent (built from docs/spec/summarizer.md)
+│   │   ├── assessor.md                      # assessor agent (built from docs/spec/agents/assessor.md)
+│   │   ├── designer.md                      # designer agent (built from docs/spec/agents/designer.md)
+│   │   └── summarizer.md                    # summarizer agent (built from docs/spec/agents/summarizer.md)
 │   └── skills/clarify/
-│       └── SKILL.md                         # /clarify skill (built from docs/spec/clarify.md)
+│       └── SKILL.md                         # /clarify skill (built from docs/spec/agents/clarify.md)
 ├── docs/
 │   ├── threat-risk-assessment-process.md    # the 11-step TRA process the assessor follows
 │   ├── project-data-flow.html               # data flow diagram of this workspace (open in a browser)
@@ -55,11 +55,13 @@ For how data moves between people, the agents, the files and the browser, and wh
 │   │   ├── security-design-template.md         # the security design template
 │   │   └── security-controls-template.md       # the security control list template
 │   └── spec/
-│       ├── assessor.md                      # spec for the assessor agent
-│       ├── clarify.md                       # spec for the /clarify skill
-│       ├── designer.md                      # spec for the designer agent
-│       ├── summarizer.md                    # spec for the summarizer agent
-│       └── assessment-browser/features.md   # spec for the assessment browser
+│       ├── agents/                          # specs for the agents and the skill
+│       │   ├── assessor.md                  # spec for the assessor agent
+│       │   ├── clarify.md                   # spec for the /clarify skill
+│       │   ├── designer.md                  # spec for the designer agent
+│       │   └── summarizer.md                # spec for the summarizer agent
+│       └── tools/                           # specs for the tools, one folder per tools/<name>/
+│           └── assessment-browser/          # spec for the assessment browser
 ├── tools/assessment-browser/
 │   ├── serve.py                             # assessment browser: local web server
 │   └── static/                              # the browser app (HTML, JavaScript, CSS)
@@ -231,7 +233,7 @@ Open the subject to see the risk matrix and register, then go through the TRA, d
 
 ## The assessor agent
 
-**Definition:** `.claude/agents/assessor.md`. **Spec:** `docs/spec/assessor.md`.
+**Definition:** `.claude/agents/assessor.md`. **Spec:** `docs/spec/agents/assessor.md`.
 
 ### Inputs
 
@@ -301,7 +303,7 @@ A re-assessment can raise ratings as well as lower them: an answer can reveal a 
 
 ## The designer agent
 
-**Definition:** `.claude/agents/designer.md`. **Spec:** `docs/spec/designer.md`.
+**Definition:** `.claude/agents/designer.md`. **Spec:** `docs/spec/agents/designer.md`.
 
 The designer needs a finished TRA. If there's no TRA for the subject, it stops and asks you to run the assessor first. It runs on Sonnet (set by `model: sonnet` in its definition); the assessor uses the same model as your Claude Code session.
 
@@ -359,7 +361,7 @@ The control list also has a risk-coverage table, a table showing what happens to
 
 ## The summarizer agent
 
-**Definition:** `.claude/agents/summarizer.md`. **Spec:** `docs/spec/summarizer.md`.
+**Definition:** `.claude/agents/summarizer.md`. **Spec:** `docs/spec/agents/summarizer.md`.
 
 ```
 use the summarizer agent for public-web-server
@@ -483,7 +485,7 @@ When you've answered a batch, ask for a re-assessment.
 
 ## Browsing the assessments
 
-**Code:** `tools/assessment-browser/`. **Spec:** `docs/spec/assessment-browser/features.md`.
+**Code:** `tools/assessment-browser/`. **Spec:** `docs/spec/tools/assessment-browser/features.md`.
 
 The assessment browser shows the documents in `scenario/` and `output/` in a web browser, with the IDs linked together. It needs only Python 3.7 or later (no packages to install) and a current web browser, and it doesn't use any agent or skill. Start it from the repository root:
 
@@ -551,22 +553,22 @@ Every risk traces to its assets, threats, vulnerabilities and existing controls.
 
 ## Changing the agents
 
-Each agent and skill has a **spec** in `docs/spec/`, the short, human-maintained statement of what it must do. The **agent definition** in `.claude/agents/` (or the skill in `.claude/skills/`) is the detailed instruction set built from it.
+Each agent and skill has a **spec** in `docs/spec/agents/`, the short, human-maintained statement of what it must do. The **agent definition** in `.claude/agents/` (or the skill in `.claude/skills/`) is the detailed instruction set built from it.
 
 To change an agent's behaviour:
 
-1. Edit the spec in `docs/spec/<agent>.md`.
-2. Ask Claude Code to rebuild the agent from the spec, for example: `rewrite the agent at docs/spec/assessor.md`.
+1. Edit the spec in `docs/spec/agents/<agent>.md`.
+2. Ask Claude Code to rebuild the agent from the spec, for example: `rewrite the agent at docs/spec/agents/assessor.md`.
 3. Review the diff and commit both files together.
 
 To change how assessments are done for every subject, edit `docs/threat-risk-assessment-process.md` or the templates in `docs/templates/`. The agents read them on every run and never modify them. If you rename a table column or change how questions are laid out (`clarifications-template.md`), check that the assessment browser and `/clarify` still read them (see [What it relies on](#what-it-relies-on)).
 
 ### Changing the assessment browser
 
-The browser is code, not an agent, but it follows the same pattern: `docs/spec/assessment-browser/features.md` says what it must do.
+The browser is code, not an agent, but it follows the same pattern: `docs/spec/tools/assessment-browser/features.md` says what it must do. Specs for tools live under `docs/spec/tools/`, in a folder named after the tool's folder in `tools/`.
 
 1. Edit the spec.
-2. Ask Claude Code to update the browser to match, for example: `update the assessment browser to match docs/spec/assessment-browser/features.md`.
+2. Ask Claude Code to update the browser to match, for example: `update the assessment browser to match docs/spec/tools/assessment-browser/features.md`.
 3. Run it against the subjects in `output/` and check the pages, then commit the spec and the code together.
 
 ### Updating the data flow diagram

@@ -7,7 +7,7 @@ Uses only the Python standard library and listens on 127.0.0.1 only, because
 the documents can describe real systems.
 
 The only files it writes are answer drafts and submissions, in
-output/<subject>/answers/ (see docs/spec/assessment-browser/).
+output/<subject>/answers/ (see docs/spec/tools/assessment-browser/).
 
     python tools/assessment-browser/serve.py [--port 8765] [--no-open]
 """

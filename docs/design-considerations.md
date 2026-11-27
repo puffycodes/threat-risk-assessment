@@ -18,7 +18,7 @@ Decisions about how this workspace is built, and the findings behind them. Each 
 
 ### How things stand
 
-The three agents (`assessor`, `designer`, `summarizer`) are subagents in `.claude/agents/`. Each holds its whole procedure in its body. Each is built from its spec in `docs/spec/`, and runs in its own context with a fixed tool list. `/clarify` is the only skill, in `.claude/skills/clarify/SKILL.md`.
+The three agents (`assessor`, `designer`, `summarizer`) are subagents in `.claude/agents/`. Each holds its whole procedure in its body. Each is built from its spec in `docs/spec/agents/`, and runs in its own context with a fixed tool list. `/clarify` is the only skill, in `.claude/skills/clarify/SKILL.md`.
 
 Running each agent as a subagent matters for two reasons:
 
@@ -66,7 +66,7 @@ Costs and risks:
 - In the main conversation, the tool limit is weaker (see above). The data flow diagram would need a flow for the new path.
 - An assessment fills up the main conversation quickly.
 - If the skill could be picked by Claude, the agent and the skill would both match "perform a TRA". `disable-model-invocation: true` avoids that.
-- `docs/spec/assessor.md` would produce two files. The README (layout, "Running the agents", "Changing the agents") and `tools/data-flow-diagram/` would need updating.
+- `docs/spec/agents/assessor.md` would produce two files. The README (layout, "Running the agents", "Changing the agents") and `tools/data-flow-diagram/` would need updating.
 - The procedure's "Final response" section is a report for whoever called the agent. In the main conversation, a different ending suits better.
 
 **B. The skill starts the agent (the other way round).**
@@ -88,7 +88,7 @@ Cost: there's no way to run the assessment in the main conversation. Given the r
 ### Before building either design
 
 1. Test-run it on one subject and check that the outputs match a run of the agent as it is.
-2. Update the spec in `docs/spec/`, the README and the data flow diagram, as "Changing the agents" in the README describes.
+2. Update the spec in `docs/spec/agents/`, the README and the data flow diagram, as "Changing the agents" in the README describes.
 3. After a Claude Code upgrade, check these fields again. They change between versions.
 
 ### Exporting the agents as skills for other environments
