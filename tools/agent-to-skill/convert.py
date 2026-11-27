@@ -515,6 +515,50 @@ def check(skill_text, skill_dir, source, target_name, target):
                            + "\nAdd a rewrite rule in tools/agent-to-skill/convert.py.")
 
 
+# How to start a skill in each target's chat, for the quick start in its README.
+QUICK_START = {
+    "claude-code": {"host": "Claude Code", "how": "Type", "run": "/{skill} web-server",
+                    "clarify": "Run `/clarify web-server` to be interviewed"},
+    "cursor": {"host": "Cursor", "how": "Ask in chat:", "run": "Use the {skill} skill on web-server",
+               "clarify": "Run `/clarify web-server` to be interviewed"},
+    "copilot": {"host": "GitHub Copilot", "how": "Ask in Copilot Chat, in agent mode:",
+                "run": "Use the {skill} skill on web-server",
+                "clarify": "Run `/clarify web-server` to be interviewed"},
+    "generic": {"host": "the host", "how": "Ask in chat:", "run": "Use the {skill} skill on web-server",
+                "clarify": "Ask `Use the clarify skill on web-server` to be interviewed"},
+}
+
+
+def quick_start(target_name, target):
+    q = QUICK_START[target_name]
+    d = target["skills_dir"]
+    run = lambda skill: f"{q['how']} `{q['run'].format(skill=skill)}`."
+    if target["generic"]:
+        install = (f"copy the four folders under `{d}/` to wherever your host loads skills from, or zip one "
+                   "skill's folder and upload it where the host takes uploads.")
+    else:
+        install = (f"copy the four folders under `{d}/` into `{d}/` in the project where you'll run the "
+                   f"assessments. Restart or reload {q['host']} if the skills don't show up.")
+    return f"""## Quick start
+
+1. **Unpack and install.** If you have the archive, extract it. Then {install}
+2. **Describe the subject.** In that project, write `scenario/<subject>/description.md`: what the system is, who
+   uses it, the data it holds, how it connects to other systems, and the controls you know of. `<subject>` is a
+   short slug, such as `web-server`.
+3. **Assess.** {run("assessor")} It writes `output/web-server/threat-risk-assessment-web-server.md` and
+   `output/web-server/clarifications-needed-web-server.md`.
+4. **Answer the questions.** {q['clarify']}, or edit the clarifications file yourself. Then run the assessor again:
+   it re-scores the risks from your answers and asks follow-up questions. Repeat until the questions that drive
+   the ratings are answered.
+5. **Design.** {run("designer")} It writes `security-design-web-server.md` and `security-controls-web-server.md`
+   next to the TRA. Run it again whenever the TRA changes.
+6. **Summarize (optional).** {run("summarizer")} It writes a description of the system with no risk assessment in
+   it. Copy it to `scenario/<new-subject>/description.md` to assess the system afresh.
+
+Check the self-check at the end of each run, and read the documents before relying on them.
+"""
+
+
 def readme(target_name, target, skills, ver):
     d = target["skills_dir"]
     listed = "\n".join(f"- `{d}/{name}/`" + (f": also holds {', '.join(f'`{bundled_path(p)}`' for p in docs)}"
@@ -551,6 +595,7 @@ python tools/agent-to-skill/convert.py --target {target_name} --check <installed
 The skills read their subjects from `scenario/<subject>/` and write to `output/<subject>/`, relative to that
 project's root folder.
 
+{quick_start(target_name, target)}
 ## Before you rely on them
 
 - **No tool limit.** As agents, these ran with a fixed set of tools. As skills, they run in the main conversation

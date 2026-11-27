@@ -597,7 +597,7 @@ It needs Python 3.9 or later, with no packages to install, and git for the versi
 | `copilot` | `dist/copilot/.github/skills/` | `.github/skills/` |
 | `generic` | `dist/generic/skills/` | Wherever the host loads skills from, or zip one skill's folder and upload it |
 
-Each skill folder holds a `SKILL.md` and copies of the process and template files the skill reads, so the other project needs nothing from `docs/`. Each target also gets a `README.md` with install notes.
+Each skill folder holds a `SKILL.md` and copies of the process and template files the skill reads, so the other project needs nothing from `docs/`. Each target also gets a `README.md` with install notes and a quick start.
 
 What the script changes:
 
