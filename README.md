@@ -67,8 +67,10 @@ For how data moves between people, the agents, the files and the browser, and wh
 │   ├── generate.py                          # writes docs/project-data-flow.html
 │   └── template.html                        # the page around the diagram, with the flow register
 ├── tools/agent-to-skill/
-│   └── convert.py                           # builds the agents and /clarify as skills, into dist/
+│   ├── convert.py                           # builds the agents and /clarify as skills, into dist/
+│   └── package.py                           # packs each build into an archive, into dist/packages/
 ├── dist/<target>/                           # skills built by convert.py              (not in git)
+├── dist/packages/                           # archives made by package.py             (not in git)
 ├── tmp/                                     # scratch space for testing               (not in git)
 ├── scenario/<subject>/                      # input: one folder per subject   (not in git)
 │   └── description.md
@@ -630,6 +632,26 @@ python tools/agent-to-skill/convert.py --target cursor --check ../other-project/
 It builds the target in a temporary folder, leaving `dist/` alone, and reports each skill as `current`, `out of date` (with the installed version), `edited after it was installed` (with the files that differ) or `not installed`. It exits with 0 when every skill is current, 1 when one isn't, and 2 on an error.
 
 To release a version, tag the commit: `git tag skills-v1.2.0`. Use the major number for a change that breaks existing outputs, such as a new clarifications layout or ID scheme; the minor number for new rules or sections; and the patch number for wording or converter fixes.
+
+### Packaging the exported skills
+
+To hand the skills to someone, `tools/agent-to-skill/package.py` packs each target's build into one archive:
+
+```
+python tools/agent-to-skill/convert.py
+python tools/agent-to-skill/package.py                    # all four targets, as .zip
+python tools/agent-to-skill/package.py --format tar.gz    # or both; --target packs one target
+```
+
+It writes `dist/packages/tra-skills-<target>-<version>.zip` (or `.tar.gz`), and `SHA256SUMS` with a checksum for each archive. Each archive holds one folder, `tra-skills-<target>-<version>/`, with the target's `README.md`, `skills-manifest.json` and skills folder, laid out as in `dist/<target>/`. The recipient extracts it and follows that `README.md`.
+
+It packs only what it can vouch for, and stops with an error otherwise:
+
+- **The build matches its manifest:** every file is there with the SHA-256 the manifest lists, and nothing has been added.
+- **The build is current:** its version is the one the sources have now. If a source has been committed since, run `convert.py` again first.
+- **The build is clean:** a `-dirty` or `unknown` build needs `--allow-dirty`, as with `convert.py`. Don't hand that archive out.
+
+It checks every target before writing any archive. The archives are reproducible: packing the same build twice gives the same bytes, so a checksum identifies a build.
 
 ---
 
