@@ -218,7 +218,7 @@ These are things the host must be able to do, not dependencies on a particular p
 - **Copied templates had broken links.** Their links pointed at places in `docs/` that the skill folders don't have. The converter now points each link at the copy, or drops a link to a file the skill doesn't copy, and fails the build on a link that leads outside the skill's folder. This affected every target, not only generic.
 - **The assessor had no rule for secrets.** It copied submitted answers exactly, so a password typed in the assessment browser would have reached the clarifications file and the TRA. The assessor now withholds the value, records the disclosure as a vulnerability, and recommends changing the secret and withdrawing the submission. This was a gap in the agent itself, so the fix applies to the agents too.
 
-**Still to do:** a test run on a host other than Claude Code, such as Cursor or GitHub Copilot.
+**Still to do:** a test run on a host other than Claude Code, such as Cursor or GitHub Copilot. It should also confirm how the quick start in each target's README says to start a skill: asking for it by name in Cursor's chat, and in Copilot Chat in agent mode. Neither has been tried.
 
 ### Versioning the exported skills
 

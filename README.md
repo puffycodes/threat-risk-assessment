@@ -631,7 +631,7 @@ python tools/agent-to-skill/convert.py --target cursor --check ../other-project/
 
 It builds the target in a temporary folder, leaving `dist/` alone, and reports each skill as `current`, `out of date` (with the installed version), `edited after it was installed` (with the files that differ) or `not installed`. It exits with 0 when every skill is current, 1 when one isn't, and 2 on an error.
 
-To release a version, tag the commit: `git tag skills-v1.2.0`. Use the major number for a change that breaks existing outputs, such as a new clarifications layout or ID scheme; the minor number for new rules or sections; and the patch number for wording or converter fixes.
+To release a version, tag the commit and package it again; see [Releasing a version](#releasing-a-version).
 
 ### Packaging the exported skills
 
@@ -653,7 +653,27 @@ It packs only what it can vouch for, and stops with an error otherwise:
 - **The build is current:** its version is the one the sources have now. If a source has been committed since, run `convert.py` again first.
 - **The build is clean:** a `-dirty` or `unknown` build needs `--allow-dirty`, as with `convert.py`. Don't hand that archive out.
 
-It checks every target before writing any archive. The archives are reproducible: packing the same build twice gives the same bytes, so a checksum identifies a build.
+It checks every target before writing any archive. The archives are reproducible: packing the same build twice gives the same bytes, so a checksum identifies a build. Running `convert.py` again makes a new build, with a new build time in the manifest, so its archives get new checksums even when the skills are the same. Hand out `SHA256SUMS` together with the archives it was written for.
+
+### Releasing a version
+
+1. **Choose the number.** Use the major number for a change that breaks existing outputs, such as a new clarifications layout or ID scheme; the minor number for new rules or sections; and the patch number for wording or converter fixes.
+2. **Tag the commit** with an annotated tag, which records who tagged it, when, and why. The tag goes on `HEAD` unless you name a commit:
+
+   ```
+   git tag -a skills-v1.2.0 -m "Skills 1.2.0: <what changed>"
+   ```
+
+3. **Push the tag.** `git push` doesn't send tags, so name it: `git push origin skills-v1.2.0`. Don't move or delete a tag once it's pushed, since builds stamped with that version would no longer match it.
+4. **Build and package again**, so the version and the archive names pick up the tag. `package.py` keeps earlier archives in `dist/packages/` and in `SHA256SUMS`, so clear the folder first:
+
+   ```
+   python tools/agent-to-skill/convert.py
+   rm -rf dist/packages          # PowerShell: Remove-Item -Recurse dist/packages
+   python tools/agent-to-skill/package.py
+   ```
+
+   The archives are now named `tra-skills-<target>-1.2.0.zip`. Copies installed from an earlier version show as `out of date` with `--check`.
 
 ---
 
