@@ -595,7 +595,7 @@ It needs Python 3.9 or later, with no packages to install, and git for the versi
 | `claude-code` | `dist/claude-code/.claude/skills/` | `.claude/skills/` |
 | `cursor` | `dist/cursor/.cursor/skills/` | `.cursor/skills/` |
 | `copilot` | `dist/copilot/.github/skills/` | `.github/skills/` |
-| `generic` | `dist/generic/skills/` | Wherever the host loads skills from, or upload a zipped folder |
+| `generic` | `dist/generic/skills/` | Wherever the host loads skills from, or zip one skill's folder and upload it |
 
 Each skill folder holds a `SKILL.md` and copies of the process and template files the skill reads, so the other project needs nothing from `docs/`. Each target also gets a `README.md` with install notes.
 
@@ -643,7 +643,9 @@ python tools/agent-to-skill/package.py                    # all four targets, as
 python tools/agent-to-skill/package.py --format tar.gz    # or both; --target packs one target
 ```
 
-It writes `dist/packages/tra-skills-<target>-<version>.zip` (or `.tar.gz`), and `SHA256SUMS` with a checksum for each archive. Each archive holds one folder, `tra-skills-<target>-<version>/`, with the target's `README.md`, `skills-manifest.json` and skills folder, laid out as in `dist/<target>/`. The recipient extracts it and follows that `README.md`.
+It writes `dist/packages/tra-skills-<target>-<version>.zip` (or `.tar.gz`), and `SHA256SUMS` with a checksum for each archive. Each archive holds one folder, `tra-skills-<target>-<version>/`, with the target's `README.md`, `skills-manifest.json` and skills folder, laid out as in `dist/<target>/`. The recipient extracts it and follows that `README.md`. It needs the same as `convert.py`: Python 3.9 or later, with no packages to install, and git to read the version.
+
+The archives are for handing a whole build to someone, not for uploading to a host. A host that takes uploads expects one skill per zip, and each archive holds all four skills with the README and manifest around them. To upload a skill, zip its own folder, such as `dist/generic/skills/assessor/`.
 
 It packs only what it can vouch for, and stops with an error otherwise:
 
