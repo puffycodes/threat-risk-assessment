@@ -61,7 +61,9 @@ For how data moves between people, the agents, the files and the browser, and wh
 │       │   ├── designer.md                  # spec for the designer agent
 │       │   └── summarizer.md                # spec for the summarizer agent
 │       └── tools/                           # specs for the tools, one folder per tools/<name>/
-│           └── assessment-browser/          # spec for the assessment browser
+│           ├── assessment-browser/          # spec for the assessment browser
+│           ├── data-flow-diagram/           # spec for the data flow diagram generator
+│           └── agent-to-skill/              # spec for exporting and packaging the skills
 ├── tools/assessment-browser/
 │   ├── serve.py                             # assessment browser: local web server
 │   └── static/                              # the browser app (HTML, JavaScript, CSS)
@@ -573,7 +575,7 @@ The browser is code, not an agent, but it follows the same pattern: `docs/spec/t
 
 ### Updating the data flow diagram
 
-When a change adds, removes or alters a data flow, for example a new agent, a new browser endpoint or web access for an agent that had none, update the [data flow diagram](docs/project-data-flow.html):
+When a change adds, removes or alters a data flow, for example a new agent, a new browser endpoint or web access for an agent that had none, update the [data flow diagram](docs/project-data-flow.html). What the generator must do is in `docs/spec/tools/data-flow-diagram/features.md`.
 
 1. Edit the nodes and edges in `tools/data-flow-diagram/generate.py`, and the flow register and trust boundary notes in `tools/data-flow-diagram/template.html`. Keep the flow numbers in both the same.
 2. Run `python tools/data-flow-diagram/generate.py` from the repository root. It needs only Python 3, and it overwrites `docs/project-data-flow.html`.
@@ -584,6 +586,8 @@ When a change adds, removes or alters a data flow, for example a new agent, a ne
 ## Exporting the agents as skills
 
 Some environments support skills but not agents. For those, `tools/agent-to-skill/convert.py` builds the three agents and `/clarify` as skills, for Claude Code in another project, Cursor and GitHub Copilot. It also makes a generic build for any other host that supports the Agent Skills standard. This project keeps running the agents as agents, and the script never changes them.
+
+**Code:** `tools/agent-to-skill/`. **Spec:** `docs/spec/tools/agent-to-skill/features.md`.
 
 ```
 python tools/agent-to-skill/convert.py                  # all four targets
