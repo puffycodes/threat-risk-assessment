@@ -23,7 +23,8 @@ A build refuses to run when the sources have uncommitted changes, or git
 isn't available, since it couldn't be traced to a commit; --allow-dirty
 builds anyway, marked -dirty or unknown.
 
-See "Agent vs Skill" in docs/design-considerations.md for the reasoning.
+What it must do is in docs/spec/tools/agent-to-skill/features.md, and the
+reasoning is in "Agent vs Skill" in docs/design-considerations.md.
 Uses only the Python standard library, and git for the version.
 
     python tools/agent-to-skill/convert.py [--target all|claude-code|cursor|copilot|generic] [--out dist] [--allow-dirty]

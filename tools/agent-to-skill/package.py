@@ -18,6 +18,7 @@ Before packaging a target it checks that:
 The archives are reproducible: entries are sorted, and their times are the
 build's built_at time, so packaging the same build twice gives the same bytes.
 
+What it must do is in docs/spec/tools/agent-to-skill/features.md.
 Uses only the Python standard library, and git through convert.py.
 
     python tools/agent-to-skill/package.py [--target all|claude-code|cursor|copilot|generic] [--format zip|tar.gz|both] [--dist dist] [--out dist/packages] [--allow-dirty]

@@ -565,13 +565,26 @@ To change an agent's behaviour:
 
 To change how assessments are done for every subject, edit `docs/threat-risk-assessment-process.md` or the templates in `docs/templates/`. The agents read them on every run and never modify them. If you rename a table column or change how questions are laid out (`clarifications-template.md`), check that the assessment browser and `/clarify` still read them (see [What it relies on](#what-it-relies-on)).
 
-### Changing the assessment browser
+### Changing the tools
 
-The browser is code, not an agent, but it follows the same pattern: `docs/spec/tools/assessment-browser/features.md` says what it must do. Specs for tools live under `docs/spec/tools/`, in a folder named after the tool's folder in `tools/`.
+The tools are code, not agents, but they follow the same pattern. Each has a spec under `docs/spec/tools/`, in a folder named after the tool's folder in `tools/`, that says what it must do:
 
-1. Edit the spec.
-2. Ask Claude Code to update the browser to match, for example: `update the assessment browser to match docs/spec/tools/assessment-browser/features.md`.
-3. Run it against the subjects in `output/` and check the pages, then commit the spec and the code together.
+| Tool | Code | Spec |
+|---|---|---|
+| Assessment browser | `tools/assessment-browser/` | `docs/spec/tools/assessment-browser/features.md` |
+| Data flow diagram | `tools/data-flow-diagram/` | `docs/spec/tools/data-flow-diagram/features.md` |
+| Agent-to-skill export | `tools/agent-to-skill/` | `docs/spec/tools/agent-to-skill/features.md` |
+
+To change what a tool does:
+
+1. Edit its spec.
+2. Ask Claude Code to update the tool to match, for example: `update the assessment browser to match docs/spec/tools/assessment-browser/features.md`.
+3. Check the change, then commit the spec and the code together:
+   - **Assessment browser:** run it against the subjects in `output/` and check the pages.
+   - **Data flow diagram:** regenerate the page and check that no line or flow number overlaps another.
+   - **Agent-to-skill export:** build every target with `convert.py --allow-dirty` and check that every skill passes, then package them. A change to `convert.py` gives the skills a new version once committed; build and package again then, without `--allow-dirty`.
+
+Changing the flows in the diagram, without changing what the generator does, doesn't touch the spec; see the next section.
 
 ### Updating the data flow diagram
 

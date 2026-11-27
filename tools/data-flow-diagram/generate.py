@@ -5,6 +5,7 @@ Lays out the diagram's nodes, trust boundaries and numbered flows, draws them
 as inline SVG, and writes the page from template.html, which holds the
 legend, the flow register and the trust boundary notes. Edit the nodes and
 edges below, and the register in the template, whenever a flow changes.
+What the generator must do is in docs/spec/tools/data-flow-diagram/features.md.
 Uses only the Python standard library.
 
     python tools/data-flow-diagram/generate.py [--out docs/project-data-flow.html]
